@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="VectorFormula"
+   name="LM317TVoltage"
+   width="410"
+   height="130"
+   onload="UpdateVref();"
+   debug="false"
+   version="1.1"
+   sodipodi:docname="lm317-formula.svg"
+   viewBox="0 0 410 130"
+   inkscape:version="0.92+devel 15114">
+  <script
+     xlink:href="https://raw.githubusercontent.com/svgdotjs/svg.js/master/dist/svg.min.js"
+     id="script3605" />
+  <script
+     xlink:href="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"
+     id="script3603" />
+  <script
+     id="script3601">
+function UpdateVref()
+{
+ var VForm = SVG( 'VectorFormula' ) ;
+ var FormDebug = document.getElementById(&quot;VectorFormula&quot;) ;
+ var IsDebug = new Boolean(false) ;
+ if ( String(VForm.attr(&quot;debug&quot;)).toLowerCase() === &quot;true&quot; )
+ {
+  IsDebug=true ; 
+ }
+ 
+ var VoltageRef = document.getElementById(&quot;vref&quot;) ; 
+ 
+ //var StrVRef = VoltageRef.textContent ; 
+ var StrVRef = VoltageRef.textContent ; 
+ 
+ if ( IsDebug == true ) 
+ { 
+  alert(&quot;Voltage Reference at creation:&quot; + StrVRef ) ;  
+ } 
+ 
+ var NmVref = Number( StrVRef ) ;
+ 
+ //var IntVref ;
+ var IsUnderVref = new Boolean( NmVref &lt; 1.25 ); 
+ var IsOverVref = new Boolean( NmVref &gt; 2.00 ); 
+ var IsNoVref= new Boolean( NmVref == 0.0 ) ; 
+ var StrAnswer ;
+ StrAnswer = &quot;NmVref &lt; 1.25 : __IsUnderVref__\nNmVref &gt; 2.00 : __IsOverVref__\nNmVref == 0.0: __IsNoVref__&quot; ; 
+ 
+ StrAnswer= StrAnswer.replace(&quot;__IsUnderVref__&quot;,IsUnderVref.toString()) ; 
+ StrAnswer= StrAnswer.replace(&quot;__IsOverVref__&quot;,IsOverVref.toString()) ; 
+ StrAnswer= StrAnswer.replace(&quot;__IsNoVref__&quot;,IsNoVref.toString()) ; 
+ 
+ if ( IsDebug == true ) 
+ { 
+  alert( StrAnswer ) ; 
+ }
+ 
+ if ( IsDebug == true ) 
+ { 
+  if(  IsUnderVref == true  )
+  {
+   alert( &quot;Voltage reference must be higher than 1.25 volts .&quot; ) ; 
+  }
+  if( IsOverVref == true )
+  {
+    alert( &quot;Voltage reference must be lower than 2.0 Volts.&quot; ) ; 
+  }
+ }
+ 
+ if( IsNoVref == true )
+ {
+  IntVref=1.25 ; 
+  alert(&quot;Voltage Reference set to default:&quot; + IntVref ) ;  
+ }
+ //VoltageRef.value = IntVref.toString() ; 
+ //document.getElementById(&quot;vref&quot;) .value
+ 
+ $(document).ready(function(){$(&quot;tspan#vref&quot;).text( IntVref.toString() ) ;}); 
+ 
+
+}
+</script>
+  <metadata
+     id="metadata3574">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3572" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="721"
+     id="namedview3570"
+     showgrid="false"
+     inkscape:zoom="1.8902439"
+     inkscape:cx="131.2"
+     inkscape:cy="94.946112"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="VectorFormula" />
+  <text
+     x="20"
+     y="45"
+     style="font-style:normal;font-weight:normal;font-size:24.14999962px;line-height:25px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3520">V</text>
+  <text
+     x="35"
+     y="50"
+     style="font-style:normal;font-weight:normal;font-size:14.10999966px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3526">out<tspan
+   x="285"
+   y="50"
+   style="font-style:normal;font-weight:normal;font-size:14.10999966px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:-50%;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+   id="tspan3522">Adj</tspan>
+<tspan
+   x="320"
+   y="50"
+   id="tspan3524">2</tspan>
+</text>
+  <text
+     x="65"
+     y="45"
+     style="font-style:normal;font-weight:normal;font-size:14.10999966px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3539">
+    <tspan
+       x="65"
+       y="45"
+       id="tspan3528">=</tspan>
+    <tspan
+       x="85"
+       y="45"
+       id="vref"
+       name="VoltageRef">0.00</tspan>
+    <tspan
+       x="120"
+       y="45"
+       id="tspan3531">V</tspan>
+    <tspan
+       x="135"
+       y="45"
+       id="tspan3533">x</tspan>
+    <tspan
+       x="260"
+       y="45"
+       id="tspan3535">+</tspan>
+    <tspan
+       x="280"
+       y="45"
+       id="Intensity"
+       name="Intensity">I</tspan>
+    <tspan
+       x="310"
+       y="45"
+       id="RSecondIntensity"
+       name="R2Intensity">R</tspan>
+  </text>
+  <text
+     x="75"
+     y="12"
+     transform="scale(2,5)"
+     style="font-style:normal;font-weight:normal;font-size:10px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3545">
+    <tspan
+       x="75"
+       y="12"
+       id="tspan3541">(</tspan>
+    <tspan
+       x="125"
+       y="12"
+       id="tspan3543">)</tspan>
+  </text>
+  <text
+     x="170"
+     y="46"
+     style="font-style:normal;font-weight:normal;font-size:20px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3547">1 +</text>
+  <line
+     x1="215"
+     y1="40"
+     x2="240"
+     y2="40"
+     style="stroke:#000000;stroke-width:2"
+     id="line3549" />
+  <text
+     x="170"
+     y="46"
+     style="font-style:normal;font-weight:normal;font-size:20px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3553">
+    <tspan
+       x="220"
+       y="34"
+       id="RFirst"
+       name="R1">R</tspan>
+    <tspan
+       x="220"
+       y="60"
+       id="RSecond"
+       name="R2">R</tspan>
+  </text>
+  <text
+     x="170"
+     y="46"
+     style="font-weight:normal;font-size:12px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text3559">
+    <tspan
+       x="238"
+       y="38"
+       id="tspan3555">1</tspan>
+    <tspan
+       x="238"
+       y="64"
+       id="tspan3557">2</tspan>
+  </text>
+  <rect
+     x="80"
+     y="12"
+     rx="9"
+     ry="20"
+     width="180"
+     height="85"
+     style="opacity:0.2;fill:#d95326;stroke:#000000;stroke-width:3"
+     id="rect3561"
+     onload="UpdateVref()" />
+  <text
+     x="90"
+     y="86"
+     font-size="14"
+     id="text3563"
+     style="font-size:14px;font-family:Verdana;fill:#646464">Voltage Section</text>
+  <rect
+     x="270"
+     y="1"
+     rx="9"
+     ry="20"
+     width="125"
+     height="75"
+     style="opacity:0.2;fill:#3e8e3e;stroke:#000000;stroke-width:3"
+     id="rect3565" />
+  <text
+     x="280"
+     y="20"
+     font-size="14"
+     id="text3567"
+     style="font-size:14px;font-family:Verdana;fill:#646464">Current Section</text>
+</svg>
