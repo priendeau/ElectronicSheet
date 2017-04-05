@@ -9,6 +9,8 @@
 <element id="ImageLoader1" data-debug="false" ></element>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://github.com/priendeau/ElectronicSheet/raw/master/jsfiddle/38mk78z6-javascript"></script>
+
 
 <!-- <div class="sheetpage" id="content" role="main"><div class="sheetpage" id="content" role="main"> -->
 
@@ -192,13 +194,12 @@
   <tbody>
    <tr>Formula return R2 value or Vout
     <label form="LM317Interface" for="ValueReturnR2">Select one of them</label>
-    <td class="fieldForm">R2
-     <input id="ValueReturnR2" onchange="UpdateFieldReadOnly('fieldR2')" type="radio" name="isolation" value="R2" checked>
-    </td>
     <td class="fieldForm">Vout
      <input onchange="UpdateFieldReadOnly('fieldVout')" type="radio" name="isolation" value="Vout" >
     </td>
-    
+    <td class="fieldForm">R2
+     <input id="ValueReturnR2" onchange="UpdateFieldReadOnly('fieldR2')" type="radio" name="isolation" value="R2" checked>
+    </td>
     </tr>
     <tr>
       <td class="fieldForm">Vout: </td>
