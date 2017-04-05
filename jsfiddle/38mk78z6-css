@@ -1,11 +1,11 @@
+td.ImgChipSolidState {
+width: 25px ;
+}
+
 div.sheetpage {
 width: 545px ;
 height: 1340px ; 
 border: 1px solid gray ; 
-}
-
-td.ImgChipSolidState {
-width: 25px ;
 }
 
 .BorderStyle * { 
