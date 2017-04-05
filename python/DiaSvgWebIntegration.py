@@ -1,0 +1,1 @@
+/usr/share/dia/python/DiaSvgWebIntegration.py
