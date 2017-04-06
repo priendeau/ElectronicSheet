@@ -149,30 +149,51 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   StrFileHeader   = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created by DiaSvgWebIntegration for web edition -->
 <svg width="%.3fcm" height="%.3fcm" viewBox="%.3f %.3f %.3f %.3f"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:cc="http://creativecommons.org/ns#"
+ xmlns:svg="http://www.w3.org/2000/svg"
  xmlns="http://www.w3.org/2000/svg"
  xmlns:xlink="http://www.w3.org/1999/xlink">"""
-
+   
   DrawLineTemplate      = """<line x1="%.3f" y1="%.3f" x2="%.3f" y2="%.3f" style="stroke:%s;stroke-width:%.3f" %s/>\n"""
   DrawPolyLineTemplate  = """<polyline style="fill:none;stroke:%s;stroke-width:%.3f" %s points=\""""
   DrawPolygonTemplate   = """<polygon style="fill:none;stroke:%s;stroke-width:%.3f;" %s points=\""""
   FillPolygonTemplate   = """<polygon style="fill:%s;stroke:none;stroke-width:%.3f;" points=\""""
   DrawRectangleTemplate = """<rect x="%.3f" y="%.3f" width="%.3f" height="%.3f" style="fill:none;stroke:%s;stroke-width:%.3f;" %s/>\n"""
-  DrawFillRect          = """<rect x="%.3f" y="%.3f" width="%.3f" height="%.3f" style="fill:%s;stroke:none;stroke-width:0"/>\n"""
-  DrawArcNofill         = """<path style="stroke:%s;fill:none;stroke-width:%.3f;" %s"""
-  DrawArcFill           = """<path style="stroke:none;fill:%s;\""""
-  DrawArcPoint          = """ d ="M %.3f,%.3f A %.3f,%.3f 0 %d,%d %.3f,%.3f """
-  DrawEllipse           = """<ellipse cx="%.3f" cy="%.3f" rx="%.3f" ry="%.3f" style="fill:none;stroke:%s;stroke-width:%.3f;" %s/>"""
-  DrawFillEllipse       = """<ellipse cx="%.3f" cy="%.3f" rx="%.3f" ry="%.3f" style="fill:%s;stroke:none;" />"""
-  DrawBezier            = """<path style="stroke:%s;fill:none;stroke-width:%.3f;" %s d=\""""
-  BezierMoveTo          = """M %.3f,%.3f """
-  BezierLineTo          = """L %.3f,%.3f """
-  BezierCurveTo         = """C %.3f,%.3f %.3f,%.3f %.3f,%.3f """
-  DrawFillBezier        = """<path stroke="none" fill="%s" stroke-width="%.3f" d=\""""
-  DrawString            = '<text x="%.3f" y="%.3f" text-anchor="%s" font-size="%.2f" style="fill:%s;font-family:%s;font-style:%s;font-weight:%d;" >\n'
-
+  DrawFillRectTemplate  = """<rect x="%.3f" y="%.3f" width="%.3f" height="%.3f" style="fill:%s;stroke:none;stroke-width:0"/>\n"""
+  DrawArcNofillTemplate = """<path style="stroke:%s;fill:none;stroke-width:%.3f;" %s"""
+  DrawArcFillTemplate   = """<path style="stroke:none;fill:%s;\""""
+  DrawArcPointTemplate  = """ d ="M %.3f,%.3f A %.3f,%.3f 0 %d,%d %.3f,%.3f """
+  DrawEllipseTemplate   = """<ellipse cx="%.3f" cy="%.3f" rx="%.3f" ry="%.3f" style="fill:none;stroke:%s;stroke-width:%.3f;" %s/>"""
+  DrawFillEllipseTemplate   = """<ellipse cx="%.3f" cy="%.3f" rx="%.3f" ry="%.3f" style="fill:%s;stroke:none;" />"""
+  DrawBezierTemplate    = """<path style="stroke:%s;fill:none;stroke-width:%.3f;" %s d=\""""
+  BezierMoveToTemplate  = """M %.3f,%.3f """
+  BezierLineToTemplate  = """L %.3f,%.3f """
+  BezierCurveToTemplate = """C %.3f,%.3f %.3f,%.3f %.3f,%.3f """
+  DrawFillBezierTemplate    = """<path stroke="none" fill="%s" stroke-width="%.3f" d=\""""
+  DrawStringTemplate    = """<text x="%.3f" y="%.3f" text-anchor="%s" font-size="%.2f" style="fill:%s;font-family:%s;font-style:%s;font-weight:%d;" >\n"""
+  DrawImageTemplate     = """<image x="%.3f" y="%.3f"  width="%.3f" height="%.3f" xlink:href="%s"/>\n"""
+  
   FontWeightT           = (400, 200, 300, 500, 600, 700, 800, 900)
   FontStyleT            = ('normal', 'italic', 'oblique')
+  TextAlign             = ('start', 'middle', 'end')
 
+  StrokeType = {
+    'dasharray':{ 'name':'stroke-dasharray',
+                  1:'{}:%.2f,%.2f;',
+                  2:'{}:%.2f,%.2f,%.2f,%.2f;',
+                  3:'{}:%.2f,%.2f,%.2f,%.2f,%.2f,%.2f;',
+                  4:'{}:%.2f,%.2f;'},
+    'linejoin':{ 'name':'stroke-linejoin' ,
+                 0:'',
+                 1:'{}:round;',
+                 2:'{}:bevel;'},
+    'linecaps':{ 'name':'stroke-linecap',
+                 0:'{}:butt;',
+                 1:'{}:round;',
+                 2:'{}:square;' } }
+  
   CharExceptionRepl     = [ ('&', '&amp;'),('<', '&lt;'),('>', '&gt;'),('"', '&quot;'),("'", '&apos;') ,
       ('∀','&forall;'),('∂','&part;'),('Æ','&AElig;'),('Ð','&ETH;'),('Ñ','&Ntilde;'),('×','&times;'),('Þ','&THORN;'),
       ('ß','&szlig;'),('å','&aring;'),('æ','&aelig;'),('ç','&ccedil;'),('ð','&eth;'),('÷','&divide;'),('ø','&oslash;'),
@@ -226,6 +247,10 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   TagElementClosure     = """"/>\n"""
   TagElementTextClosure = """</text>\n"""
   TagElementSvgClosure  = """</svg>"""
+
+  ListStrokeDash = []
+  ### This is an array or list of value to be pushed inside the StrokeDash
+  ### Configuration, used by property StrokeDash
   
   def __init__ (self):
     self.FileHandler  = None
@@ -235,6 +260,51 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     self.line_style   = 0
     self.dash_length  = 0
     self.Buffer       = str()
+
+  def SetVariableFormat( self, value ):
+    """This Property-setter support following calling convention:
+        self.VariableFormat = Variable
+        self.VariableFormat = Variabl1, Variable2
+        self.VariableFormat = [ Variabl1, Variable2 ]
+        """
+    if type(value) == type(tuple()) or type(value) == type(list()) :
+      if len( value ) > 0:
+        for item in value:
+          self.ListVariableFormat.append( item )
+    else:
+      self.ListVariableFormat.append( value )
+
+  def GetVariableFormat( self ):
+    """This is a Property-getter for VariableFormat"""
+    return self.ListStrokeDash
+
+  def DelVariableFormat( self ):
+    """This is a Property-reset or reseting of the ListVariableFormat list."""
+    self.ListVariableFormat=list()
+
+  VariableFormat=property( GetVariableFormat, SetVariableFormat, DelVariableFormat )
+  """VariableFormat Property used inside _stroke_style function.
+     It does like explain in function SetStrokeDash to work by appending
+     variable inside a list() and does use printf-defined type-format
+     know by %d, %s, %[0-9]+f used inside most template, before merge to
+     SvgLxmlEngine
+     """
+
+  def FormatStroke( self, StrDashType, StyleId  ):
+    StrReturnFormat=str() 
+    if len(self.VariableFormat) > 0:
+      StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] ) % self.VariableFormat
+    else:
+      StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] )
+    return StrReturnFormat
+
+  def FormatTemplate( self ):
+    StrReturnFormat=str()
+    if len(self.VariableFormat) > 0:
+      StrReturnFormat=self.TemplateString % self.VariableFormat
+    else:
+      StrReturnFormat=self.TemplateString 
+    return StrReturnFormat
 
   def WriteBuffer( self, StringText ):
     self.Buffer += StringText
@@ -312,7 +382,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
                                                      self._rgb(color), self.line_width, self._stroke_style()))
 
   def fill_rect (self, rect, color) :
-    self.WriteBuffer( self.DrawFillRect % ( rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self._rgb(color)))
+    self.WriteBuffer( self.DrawFillRectTemplate % ( rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self._rgb(color)))
 
   def _arc (self, center, width, height, angle1, angle2, color, fill=None) :
     # not in the renderer interface
@@ -327,11 +397,11 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     largearc = (angle2 - angle1 >= 180)
     sweep = 0 # always draw in negative direction
     if not fill :
-      self.WriteBuffer( self.DrawArcNofill % (self._rgb(color), self.line_width, self._stroke_style()))
+      self.WriteBuffer( self.DrawArcNofillTemplate % (self._rgb(color), self.line_width, self._stroke_style()))
     else :
-      self.WriteBuffer( self.DrawArcFill % (self._rgb(color)))
+      self.WriteBuffer( self.DrawArcFillTemplate % (self._rgb(color)))
     # moveto sx,sy arc rx,ry x-axis-rotation large-arc-flag,sweep-flag ex,ey 
-    self.WriteBuffer( self.DrawArcPoint % (sx, sy, rx, ry, largearc, sweep, ex, ey))
+    self.WriteBuffer( self.DrawArcPointTemplate % (sx, sy, rx, ry, largearc, sweep, ex, ey))
     self.WriteBuffer( self.TagElementClosure )
 
   def draw_arc (self, center, width, height, angle1, angle2, color) :
@@ -341,33 +411,33 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     self._arc(center, width, height, angle1, angle2, color, 1)
 
   def draw_ellipse (self, center, width, height, color) :
-    self.WriteBuffer( self.DrawEllipse % (center.x, center.y, width / 2, height / 2, self._rgb(color), self.line_width, self._stroke_style()))
+    self.WriteBuffer( self.DrawEllipseTemplate % (center.x, center.y, width / 2, height / 2, self._rgb(color), self.line_width, self._stroke_style()))
 
   def fill_ellipse (self, center, width, height, color) :
-    self.WriteBuffer(self.DrawFillEllipse % (center.x, center.y, width / 2, height / 2, self._rgb(color)))
+    self.WriteBuffer(self.DrawFillEllipseTemplate % (center.x, center.y, width / 2, height / 2, self._rgb(color)))
 
   def draw_bezier (self, bezpoints, color) :
-    self.WriteBuffer( self.DrawBezier % (self._rgb(color), self.line_width, self._stroke_style()))
+    self.WriteBuffer( self.DrawBezierTemplate % (self._rgb(color), self.line_width, self._stroke_style()))
     for bp in bezpoints :
       if bp.type == 0 : # BEZ_MOVE_TO
-        self.WriteBuffer( self.BezierMoveTo % (bp.p1.x, bp.p1.y))
+        self.WriteBuffer( self.BezierMoveToTemplate % (bp.p1.x, bp.p1.y))
       elif bp.type == 1 : # BEZ_LINE_TO
-        self.WriteBuffer( self.BezierLineTo % (bp.p1.x, bp.p1.y))
+        self.WriteBuffer( self.BezierLineToTemplate % (bp.p1.x, bp.p1.y))
       elif bp.type == 2 : # BEZ_CURVE_TO
-        self.WriteBuffer( self.BezierCurveTo % (bp.p1.x, bp.p1.y, bp.p2.x, bp.p2.y, bp.p3.x, bp.p3.y))
+        self.WriteBuffer( self.BezierCurveToTemplate % (bp.p1.x, bp.p1.y, bp.p2.x, bp.p2.y, bp.p3.x, bp.p3.y))
       else :
         dia.message(2, "Invalid BezPoint type (%d)" * bp.type)
       self.WriteBuffer( self.TagElementClosure )
 
   def fill_bezier (self, bezpoints, color) :
-    self.WriteBuffer( self.DrawFillBezier % (self._rgb(color), self.line_width))
+    self.WriteBuffer( self.DrawFillBezierTemplate % (self._rgb(color), self.line_width))
     for bp in bezpoints :
       if bp.type == 0 : # BEZ_MOVE_TO
-        self.WriteBuffer( self.BezierMoveTo % (bp.p1.x, bp.p1.y))
+        self.WriteBuffer( self.BezierMoveToTemplate % (bp.p1.x, bp.p1.y))
       elif bp.type == 1 : # BEZ_LINE_TO
-        self.WriteBuffer( self.BezierLineTo % (bp.p1.x, bp.p1.y))
+        self.WriteBuffer( self.BezierLineToTemplate % (bp.p1.x, bp.p1.y))
       elif bp.type == 2 : # BEZ_CURVE_TO
-        self.WriteBuffer( self.BezierCurveTo % (bp.p1.x, bp.p1.y, bp.p2.x, bp.p2.y, bp.p3.x, bp.p3.y))
+        self.WriteBuffer( self.BezierCurveToTemplate % (bp.p1.x, bp.p1.y, bp.p2.x, bp.p2.y, bp.p3.x, bp.p3.y))
       else :
         dia.message(2, "Invalid BezPoint type (%d)" * bp.type)
     self.WriteBuffer( self.TagElementClosure )
@@ -381,24 +451,23 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   def draw_string (self, text, pos, alignment, color) :
     if len(text) < 1 :
       return # shouldn'this be done at the higher level 
-    talign = ('start', 'middle', 'end') [alignment]
+    talign = self.TextAlign [alignment]
     fstyle = self.FontStyleT [self.font.style & 0x03]
     fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
-    self.WriteBuffer( self.DrawString % (pos.x, pos.y, self._rgb(color), talign, self.font_size, self.font.family, fstyle,  fweight))
+    self.WriteBuffer( self.DrawStringTemplate % (pos.x, pos.y, self._rgb(color), talign, self.font_size, self.font.family, fstyle,  fweight))
     
     self.WriteBuffer( self.TextSubst( text ) )
     self.WriteBuffer( self.TagElementTextClosure )
 
   def draw_image (self, point, width, height, image) :
-          #FIXME : do something better than absolute pathes ?
-          self.WriteBuffer('<image x="%.3f" y="%.3f"  width="%.3f" height="%.3f" xlink:href="%s"/>\n' \
-                  % (point.x, point.y, width, height, image.uri))
-  # Helpers, not in the DiaRenderer interface
+    #FIXME : do something better than absolute pathes ?
+    self.WriteBuffer( self.DrawImageTemplate % (point.x, point.y, width, height, image.uri))
+    # Helpers, not in the DiaRenderer interface
 
   def _rgb(self, color) :
-          # given a dia color convert to svg color string
-          rgb = "#%02X%02X%02X" % (int(255 * color.red), int(color.green * 255), int(color.blue * 255))
-          return rgb
+    # given a dia color convert to svg color string
+    rgb = "#%02X%02X%02X" % (int(255 * color.red), int(color.green * 255), int(color.blue * 255))
+    return rgb
 
   def _stroke_style(self) :
     # return the current line style as svg string
@@ -409,32 +478,41 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     join = self.line_join
     style = self.line_style
     st = ""
+    
     if style == 0 : # LINESTYLE_SOLID
       pass
     elif style == 1 : # DASHED
-      st = 'stroke-dasharray:%.2f,%.2f;' % (dashlen, dashlen)
+      self.VariableFormat = dashlen, dashlen
     elif style == 2 : # DASH_DOT,
       gaplen = (dashlen - dotlen) / 2.0
-      st = 'stroke-dasharray:%.2f,%.2f,%.2f,%.2f;' % (dashlen, gaplen, dotlen, gaplen)
+      self.VariableFormat = dashlen, gaplen, dotlen, gaplen
     elif style == 3 : # DASH_DOT_DOT,
       gaplen = (dashlen - dotlen) / 3.0
-      st = 'stroke-dasharray:%.2f,%.2f,%.2f,%.2f,%.2f,%.2f;' % (dashlen, gaplen, dotlen, gaplen, dotlen, gaplen)
+      self.VariableFormat = dashlen, gaplen, dotlen, gaplen, dotlen, gaplen
     elif style == 4 : # DOTTED
-      st = 'stroke-dasharray:%.2f,%.2f;' % (dotlen, dotlen)
+      self.VariableFormat = dotlen, dotlen
+
+    if style != 0:
+      st = self.FormatStroke( 'dasharray', style )
+      del self.VariableFormat
 
     if join == 0 : # MITER
       pass # st = st + ' stroke-linejoin="bevel"'
     elif join == 1 : # ROUND
-      st = st + ' stroke-linejoin:round;'
+      #st = st + 'stroke-linejoin:round;'
+      st += self.FormatStroke( 'linejoin', join )
     elif join == 2 : # BEVEL
-      st = st + ' stroke-linejoin:bevel;'
+      st += self.FormatStroke( 'linejoin', join )
+      #st = st + 'stroke-linejoin:bevel;'
 
     if caps == 0 : # BUTT
       pass # default stroke-linecap="butt"
     elif caps == 1 : # ROUND
-      st = st + ' stroke-linecap:round;'
+      st += self.FormatStroke( 'linecap', caps )
+      #st = st + ' stroke-linecap:round;'
     elif caps == 2 : # PROJECTING
-      st = st + ' stroke-linecap:square;' # is this the same ?
+      st += self.FormatStroke( 'linecap', caps )
+      #st = st + 'stroke-linecap:square;' # is this the same ?
     st='style="%s"' % ( st )
     return st
 
