@@ -57,16 +57,17 @@ entry-title-h1, entry-title-h2 {
 }
 
 </style>
+
 <!-- <link rel="stylesheet" id="font_open-sans-css" href="http://fonts.googleapis.com/css?family=Open+Sans%3A400italic%2C700italic%2C400%2C700&amp;ver=4.5.7" type="text/css" media="all"> --> 
 <link rel="stylesheet" id="font_merriweather-css" href="http://fonts.googleapis.com/css?family=Merriweather%3A700&amp;ver=4.5.7" type="text/css" media="all">
-<link rel="stylesheet" href="file:///home/maxiste/bin/html/css/style.css" type="text/css" media="all">
+<link rel="stylesheet" href="__CSS_STYLE_LOCATION__" type="text/css" media="all">
 
 <title></title>
 	
 	</header><!-- .entry-header -->
 
 <div id="primary" class="ToInterfaceArea">
- <iframe id="interface" class="interface-calc" src="file:///home/maxiste/bin/html/calculator-interface.html" >
+ <iframe id="interface" class="interface-calc" src="__CALCULATOR_INTERFACE__" >
 </div>	<!-- id-primary class-content-area -->
 
 </html>
