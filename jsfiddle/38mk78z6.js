@@ -1,18 +1,89 @@
 /*
- * File : 38mk78z6-javascript
+ * File : 38mk78z6.js
  * */
 
-var decodeBase64 = function(s) {
-    var e={},i,b=0,c,x,l=0,a,r='',w=String.fromCharCode,L=s.length;
-    var A="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    var BitStorageAperture=Math.round( Math.log(A.length) / Math.log(2))
-    for(i=0;i<A.length;i++){e[A.charAt(i)]=i;}
-    for(x=0;x<L;x++){
-        c=e[s.charAt(x)];b=(b<<BitStorageAperture)+c;l+=BitStorageAperture;
-        while(l>=8){((a=(b>>>(l-=8))&0xff)||(x<(L-2)))&&(r+=w(a));}
-    }
-    return r;
-};
+
+function Base64()
+{
+  this.TableConversionChar="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" ;
+  this.CharConv=String.fromCharCode ;
+  this.BitStorageAperture=Math.round( Math.log(this.TableConversionChar.length) / Math.log(2) ) ;
+  this.CharBitLength = 8 ;
+  this.IntChecksum = Math.pow( 2 ,this.CharBitLength )-1 ; 
+  this.CharConversionAt = function( )
+  {
+   var e={} ;  
+   for( i=0 ; i< this.TableConversionChar.length ; i++ )
+   {
+    e[ this.TableConversionChar.charAt(i)]=i;
+   } ;
+   return e ;
+  }
+}
+
+Base64.prototype.decode = function(s)
+{
+  
+  var i,c,x,a ; 
+  var b=0,l=0,r='' ;
+  var L=s.length ;
+  var e=this.CharConversionAt() ; 
+  
+  for( x=0 ; x < L ; x++ )
+  {
+   c=e[ s.charAt(x) ];
+   b=( b << this.BitStorageAperture ) + c;
+   l += this.BitStorageAperture;
+   while( l >= this.CharBitLength )
+   { 
+    ( ( a=( b >>> ( l-= this.CharBitLength ) ) & this.IntChecksum ) || 
+      ( x < ( L-2 ) ) ) && 
+              ( r+=this.CharConv(a) );
+   }
+  }
+  return r;
+ }
+ 
+Base64.prototype.encode = function(input) 
+{
+ var output = "";
+ var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+ var i = 0;
+
+ input = Base64._utf8_encode(input);
+
+ while (i < input.length) 
+ {
+
+  chr1 = input.charCodeAt( i++ );
+  chr2 = input.charCodeAt( i++ );
+  chr3 = input.charCodeAt( i++ );
+
+  enc1 = chr1 >> 2;
+  enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+  enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+  enc4 = chr3 & 63;
+
+  if (isNaN(chr2)) 
+  {
+   enc3 = enc4 = 64;
+  } 
+  else if (isNaN(chr3)) 
+  {
+   enc4 = 64;
+  }
+
+  output = output + 
+    this.TableConversionChar.charAt(enc1) + 
+    this.TableConversionChar.charAt(enc2) + 
+    this.TableConversionChar.charAt(enc3) + 
+    this.TableConversionChar.charAt(enc4);
+
+ }
+
+ return output;
+} 
+
 
 function DocGetDataAttr( ElementName, Attribute )
 {
@@ -241,72 +312,83 @@ function PinOutImage(StrTag, StrId, Debug)
  
 }
 
-function UpdateVref()
-  {
-   var VForm = SVG( 'VectorFormula' ) ;
-   var FormDebug = document.getElementById("VectorFormula") ;
-   var IsDebug = new Boolean(false) ;
-   if ( String(VForm.attr("debug")).toLowerCase() === "true" )
-   {
-    IsDebug=true ; 
-   }
-   
-   var VoltageRef = document.getElementById("vref") ; 
-   
-   //var StrVRef = VoltageRef.textContent ; 
-   var StrVRef = VoltageRef.textContent ; 
-   
-   if ( IsDebug == true ) 
-   { 
-    alert("Voltage Reference at creation:" + StrVRef ) ;  
-   } 
-   
-   var NmVref = Number( StrVRef ) ;
-   
-   //var IntVref ;
-   var IsUnderVref = new Boolean( NmVref < 1.25 ); 
-   var IsOverVref = new Boolean( NmVref > 2.00 ); 
-   var IsNoVref= new Boolean( NmVref == 0.0 ) ; 
-   var StrAnswer ;
-   StrAnswer = "NmVref < 1.25 : __IsUnderVref__\nNmVref > 2.00 : __IsOverVref__\nNmVref == 0.0: __IsNoVref__" ; 
-   
-   StrAnswer= StrAnswer.replace("__IsUnderVref__",IsUnderVref.toString()) ; 
-   StrAnswer= StrAnswer.replace("__IsOverVref__",IsOverVref.toString()) ; 
-   StrAnswer= StrAnswer.replace("__IsNoVref__",IsNoVref.toString()) ; 
-   
-   if ( IsDebug == true ) 
-   { 
-    alert( StrAnswer ) ; 
-   }
-   
-   if ( IsDebug == true ) 
-   { 
-    if(  IsUnderVref == true  )
-    {
-     alert( "Voltage reference must be higher than 1.25 volts ." ) ; 
-    }
-    if( IsOverVref == true )
-    {
-      alert( "Voltage reference must be lower than 2.0 Volts." ) ; 
-    }
-   }
-   
-   if( IsNoVref == true )
-   {
-    IntVref=1.25 ; 
-    if ( IsDebug == true ) 
-    {
-     alert("Voltage Reference set to default:" + IntVref ) ;  
-    }
-    
-   }
-   //VoltageRef.value = IntVref.toString() ; 
-   //document.getElementById("vref") .value
-   
-   $(document).ready(function(){$("tspan#vref").text( IntVref.toString() ) ;}); 
-   
+function downloadURI(uri, ImgId ) 
+{
+  var link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  delete link;
+}
 
+function UpdateVref()
+{
+ var VForm = SVG( 'VectorFormula' ) ;
+ var FormDebug = document.getElementById("VectorFormula") ;
+ var IsDebug = new Boolean(false) ;
+ if ( String(VForm.attr("debug")).toLowerCase() === "true" )
+ {
+  IsDebug=true ; 
+ }
+ 
+ var VoltageRef = document.getElementById("vref") ; 
+ 
+ //var StrVRef = VoltageRef.textContent ; 
+ var StrVRef = VoltageRef.textContent ; 
+ 
+ if ( IsDebug == true ) 
+ { 
+  alert("Voltage Reference at creation:" + StrVRef ) ;  
+ } 
+ 
+ var NmVref = Number( StrVRef ) ;
+ 
+ //var IntVref ;
+ var IsUnderVref = new Boolean( NmVref < 1.25 ); 
+ var IsOverVref = new Boolean( NmVref > 2.00 ); 
+ var IsNoVref= new Boolean( NmVref == 0.0 ) ; 
+ var StrAnswer ;
+ StrAnswer = "NmVref < 1.25 : __IsUnderVref__\nNmVref > 2.00 : __IsOverVref__\nNmVref == 0.0: __IsNoVref__" ; 
+ 
+ StrAnswer= StrAnswer.replace("__IsUnderVref__",IsUnderVref.toString()) ; 
+ StrAnswer= StrAnswer.replace("__IsOverVref__",IsOverVref.toString()) ; 
+ StrAnswer= StrAnswer.replace("__IsNoVref__",IsNoVref.toString()) ; 
+ 
+ if ( IsDebug == true ) 
+ { 
+  alert( StrAnswer ) ; 
+ }
+ 
+ if ( IsDebug == true ) 
+ { 
+  if(  IsUnderVref == true  )
+  {
+   alert( "Voltage reference must be higher than 1.25 volts ." ) ; 
   }
+  if( IsOverVref == true )
+  {
+    alert( "Voltage reference must be lower than 2.0 Volts." ) ; 
+  }
+ }
+ 
+ if( IsNoVref == true )
+ {
+  IntVref=1.25 ; 
+  if ( IsDebug == true ) 
+  {
+   alert("Voltage Reference set to default:" + IntVref ) ;  
+  }
+  
+ }
+ //VoltageRef.value = IntVref.toString() ; 
+ //document.getElementById("vref") .value
+ 
+ $(document).ready(function(){$("tspan#vref").text( IntVref.toString() ) ;}); 
+ 
+
+}
   
 function UpdateFilledAnswer( OriginForm )
 {
@@ -377,4 +459,15 @@ function UpdateFieldReadOnly( IdElement )
  }
 }
   
- 
+function AddIdtoTag(Tag, StartIdName)
+{
+ var TagList = document.getElementsByTagName( Tag );
+ var StrContent="" ;
+ var IntId ; 
+ for(x=0; x <= TagList.length-1; x++ )
+ {
+   StrContent=StartIdName + IntId ; 
+   TagList[x].setAttribute("id" , StrContent ) ;
+ }
+}
+  
