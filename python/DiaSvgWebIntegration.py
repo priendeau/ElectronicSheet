@@ -106,6 +106,11 @@ from io import StringIO
 from StringIO import StringIO
 from lxml import etree
 
+class PropertyWarning( Warning ):
+  StrMsg = 'Warning on property, {}'
+
+  def __init__( self, value ):
+    Warning.__init__( self, self.StrMsg.format( value ) )
 
 
 class SvgLxmlEngine( object ):
@@ -173,27 +178,28 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   
   StrFileHeader   = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created by DiaSvgWebIntegration for web edition -->
-<svg width="{:.3f}cm" height="{:.3f}cm" viewBox="{:.3f} {:.3f} {:.3f} {:.3f}"
+<svg width="{:.3f}cm" height="{:.3f}cm" viewBox="{:0.0f} {:0.0f} {:0.0f} {:0.0f}"
  xmlns:dc="http://purl.org/dc/elements/1.1/"
  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
  xmlns:cc="http://creativecommons.org/ns#"
  xmlns:svg="http://www.w3.org/2000/svg"
- xmlns="http://www.w3.org/2000/svg"
  xmlns:xlink="http://www.w3.org/1999/xlink">\n"""
 
-  ErrorLineTemplate         = """<!-- {:s} -->\n"""
-  DrawLineTemplate          = """\t<line x1="{:.3f}" y1="{:.3f}" x2="{:.3f}" y2="{:.3f}" style="stroke:{:s};stroke-width:{:.3f};{:s}" />\n"""
-  DrawPolyLineTemplate      = """\t<polyline style="fill:none;stroke:{:s};stroke-width:{:.3f};{:s}" points="{:s}" />\n"""
-  DrawPolygonTemplate       = """\t<polygon style="fill:none;stroke:{:s};stroke-width:{:.3f};{:s}" {:s} points="{}" />\n"""
-  DrawFillPolygonTemplate   = """\t<polygon style="fill:{:s};stroke:none;stroke-width:{:.3f};" points="{:s}" />\n"""
-  DrawRectangleTemplate     = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:none;stroke:{:s};stroke-width:{:.3f};{:s}" />\n"""
-  DrawFillRectTemplate      = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:{:s};stroke:none;stroke-width:0;{:s}"/>\n"""
-  DrawArcNofillTemplate     = """\t<path style="stroke:{:s};fill:none;stroke-width:{:.3f};{:s}" d="{:s}" />\n"""
-  DrawArcFillTemplate       = """\t<path style="fill:{:s};stroke:none;" d="{:s}" />\n"""
+  ErrorLineTemplate         = """<!-- {} -->\n"""
+  DrawLineTemplate          = """\t<line x1="{:.3f}" y1="{:.3f}" x2="{:.3f}" y2="{:.3f}" style="stroke:{};stroke-width:{:.3f};" />\n"""
+  DrawPolyLineTemplate      = """\t<polyline style="fill:none;stroke:{};stroke-width:{:.3f};" points="{:s}" />\n"""
+  DrawPolygonTemplate       = """\t<polygon style="fill:none;stroke:{};stroke-width:{:.3f};" points="{:s}" />\n"""
+  DrawFillPolygonTemplate   = """\t<polygon style="fill:{};stroke:none;stroke-width:{:.3f};" points="{:s}" />\n"""
+  DrawRectangleTemplate     = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:none;stroke:{};stroke-width:{:.3f};" />\n"""
+  DrawFillRectTemplate      = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:{};stroke:none;stroke-width:0;"/>\n"""
+  DrawArcNofillTemplate     = """\t<path style="stroke:{};fill:none;stroke-width:{:.3f};" d="{:s}" />\n"""
+  DrawArcFillTemplate       = """\t<path style="fill:{};stroke:none;" d="{:s}" />\n"""
   DrawArcPointTemplate      = """M {:.3f},{:.3f} A {:.3f},{:.3f} 0 {:d},{:d} {:.3f},{:.3f}"""
-  DrawEllipseTemplate       = """\t<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:none;stroke:{:s};stroke-width:{:.3f};{:s}" />"""
-  DrawFillEllipseTemplate   = """<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:{:s};stroke:none;" />\n"""
-  DrawBezierTemplate        = """\t<path style="fill:none;stroke:{:s};stroke-width:{:.3f};{:s}" d="{:s}" />\n"""
+                            #parameter cx, cy, rx, ry, stroke, stroke-width ; ? 
+  DrawEllipseTemplate       = """\t<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:none;stroke:{};stroke-width:{:.3f};" />"""
+                            #parameter: cx, cy, rx, ry, fill:color, 
+  DrawFillEllipseTemplate   = """<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:{};stroke:none;" />\n"""
+  DrawBezierTemplate        = """\t<path style="fill:none;stroke:{};stroke-width:{:.3f};" d="{:s}" />\n"""
   BezierMoveToTemplate      = """M {:.3f},{:.3f} """
   BezierLineToTemplate      = """L {:.3f},{:.3f} """
   BezierCurveToTemplate     = """C {:.3f},{:.3f} {:.3f},{:.3f} {:.3f},{:.3f} """
@@ -202,8 +208,8 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   Color3SpaceTemplate       = "#{:02X}{:02X}{:02X}"
                               # Red  Green  Blue  Opacity, but actually unused. 
   Color4SpaceTemplate       = "#{:02X}{:02X}{:02X}{:02X}"
-  DrawFillBezierTemplate    = """\t<path  style="fill:{:s};stroke:none;stroke-width:{:.3f};" d="{:s}" />\n"""
-  DrawStringTemplate        = """\t<text x="{:.3f}" y="{:.3f}" text-anchor="{:s}" font-size="{:.2f}" style="fill:{:s};font-family:{:s};font-style:{:s};font-weight:{:d};" >{:s}</text>\n"""
+  DrawFillBezierTemplate    = """\t<path  style="fill:{};stroke:none;stroke-width:{:.3f};" d="{:s}" />\n"""
+  DrawStringTemplate        = """\t<text x="{:.3f}" y="{:.3f}" text-anchor="{:s}" font-size="{:.2f}" style="fill:{};font-family:{:s};font-style:{:s};font-weight:{:d};" >{:s}</text>\n"""
   DrawImageTemplate         = """\t<image x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" xlink:href="{:s}"/>\n"""
   
   FontWeightT           = (400, 200, 300, 500, 600, 700, 800, 900)
@@ -290,6 +296,11 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   ### value, used by property BuildStatement
   ListBuildStatement = []
   BuildStatementValue = None 
+
+  ### Common to all Property where setter is able to filter more than
+  ### one value at the time :
+  PropertyTypeCheck=[ type(tuple()), type(list()) ]
+
   
   ActionSelectionList=[ 'Template', 'Variable', 'Error', 'Buffer', 'Commit' ]
 
@@ -338,9 +349,10 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   ### additional information if a TypeError occur during
   ### parsing.
   ### 
-  StatementFormatList=[ 'value', 'format' ]
+  StatementFormatList=[ 'value', 'format', 'storeFloat' ]
   setValue          = StatementFormatList[0]
   setFormat         = StatementFormatList[1]
+  setStoreFloat     = StatementFormatList[2]
 
 
   """
@@ -494,6 +506,8 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   def SetBSAttr( self, value ):
     if value in self.StatementFormatList:
       self.BuildStatementValue = value
+    else:
+      raise PropertyWarning, "BuildStatementAttr, Incorrect value assigned to this property, based on Setter {}".format( self.SetBSAttr.func_name )
 
   def GetBSAttr( self ):
     return self.BuildStatementValue
@@ -518,27 +532,52 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     ### First step, validating and forcing BuildStatementAttr
     ### to be set to setValue only if there is no already
     ### attribued value.
-    if self.BuildStatementAttr == None:
-      self.BuildStatementAttr = self.setValue 
-    if type(value) in [ type(tuple()), type(list()) ] :
+    if self.BuildStatementAttr not in self.StatementFormatList:
+      if self.BuildStatementAttr == None:
+        ### in case where BuildStatementAttr is clean and this property
+        ### already receiving value, it enforce the  BuildStatementAttr
+        ### to setValue . 
+        self.BuildStatementAttr = self.setValue 
+      else:
+        raise PropertyWarning, "BuildStatementAttr not configured before using property BuildStatement, based on Setter, {}".format( self.SetBuildStatement.func_name ) 
+        
+    if type(value) in self.PropertyTypeCheck :
       if len( value ) > 0:
-        for item in value:
-          self.ListBuildStatement.append( item )
+        if self.BuildStatementAttr == self.setStoreFloat:
+          for item in value:
+            print "SetBuildStatement Storing in float format"
+            self.ListBuildStatement.append( float( item )  )
+        else:
+          for item in value:
+            self.ListBuildStatement.append( item )
     else:
-      self.ListBuildStatement.append( value )
+      if self.BuildStatementAttr == self.setStoreFloat:
+        self.ListBuildStatement.append( float(value) )
+      else:
+        self.ListBuildStatement.append( value )
 
   def GetBuildStatement( self ):
     ReturnList=[]
-    if self.BuildStatementAttr == self.setValue:
-      ReturnList=self.ListBuildStatement
+    ReturnValueList=[ self.setValue, self.setStoreFloat ]
+    if self.BuildStatementAttr in ReturnValueList:
+      if self.BuildStatementAttr == self.setStoreFloat:
+        for item in self.ListBuildStatement:
+          ReturnList.append( float(item) )
+      if self.BuildStatementAttr == self.setValue:
+        ReturnList=self.ListBuildStatement
     elif self.BuildStatementAttr == self.setFormat:
       for item in self.ListBuildStatement:
         ReturnList.append(type(item))
     return ReturnList 
 
   def DelBuildStatement( self ):
-    """This is a Property-reset or reseting of the ListVariableFormat list."""
+    """This is a Property-reset or reseting of the ListVariableFormat list. It also
+require to reset the BuildStatementAttr, since a type-check of SetBuildStatement, do
+require having a clean BuildStatementAttr (BuildStatementAttr==None) to start a type
+check-validity in case receving argument."""
     self.ListBuildStatement=list()
+    del self.BuildStatementAttr
+    
 
   """VariableFormat Property used inside _stroke_style function. Explainned early in function SetStrokeDash to work by appending variable inside a list() and does use printf-defined type-format know by %d, %s, %[0-9]+f used inside most template, before merge to SvgLxmlEngine"""
   BuildStatement = property( GetBuildStatement, SetBuildStatement, DelBuildStatement )
@@ -559,10 +598,12 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   
   def SetVariableFormat( self, value ):
     """This Property-setter support following calling convention:\n\tVariableFormat = Variable\n\tVariableFormat = Variable1, Variable2\n\tself.VariableFormat = [ Variabl1, Variable2 ]\n"""
-    if type(value) == type(tuple()) or type(value) == type(list()) :
+    if type(value) in self.PropertyTypeCheck :
       if len( value ) > 0:
         for item in value:
           self.ListVariableFormat.append( item )
+      else:
+          self.ListVariableFormat.append( value[0] )
     else:
       self.ListVariableFormat.append( value )
 
@@ -571,6 +612,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
 
   def DelVariableFormat( self ):
     """This is a Property-reset or reseting of the ListVariableFormat list."""
+    self.ListVariableFormat=None
     self.ListVariableFormat=list()
 
   """VariableFormat Property used inside _stroke_style and _colorSpace function. Since both are not called altogether, they are working during uses of BuilStatement property. Explainned early in function SetStrokeDash to work by appending variable inside a list() and does use printf-defined type-format know by %d, %s, %[0-9]+f used inside most template, before merge to SvgLxmlEngine"""
@@ -599,18 +641,21 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     return StrReturnFormat
 
   def TemplateToValueParser( self, StrTemplate ):
-    ### A function calling TemplateToValueParser, should'nt require to clean
-    ### self.BuildStatementAttr since this function does it at the end. 
-    self.BuildStatementAttr = self.setValue
     try:
       self.RenderToBuffer = StrTemplate.format( self.BuildStatement )
-    except TypeError:
+    except TypeError, ValueError:
       self.BuildStatementAttr = self.setFormat
-      print "Template:{},\nValue by type:{}\n".format( self.BuildStatement )
-    ### It's important to free the BuildStatement property, to let the new statement
-    ### of vector adding new information without leaving anciens one and let the
-    ### String.format(...) throwing a TypeError . 
-    del self.BuildStatement
+      print "Exception raised,\n\tTemplate:{}\n\tvalue:{}\n".format( StrTemplate, str(self.BuildStatement) )
+      #self.BuildStatementAttr = self.setFormat
+      #print "Template:{},\nValue by type:{}\n".format( self.BuildStatement )
+    else:
+      ### It's important to free the BuildStatement property, to let the new statement
+      ### of vector adding new information without leaving anciens one and let the
+      ### String.format(...) throwing a TypeError . 
+      del self.BuildStatement
+      ### A function calling TemplateToValueParser, should'nt require to clean
+      ### self.BuildStatementAttr since this function does it at the end. 
+      self.BuildStatementAttr = self.setValue
 
 
   def WriteBuffer( self, StringText ):
@@ -633,9 +678,14 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     yofs = - r[1]
     #del self.BuildStatement
     ### Because the begin_render is the first instruction it should'nt require to
-    ### clean the BuildStatement. 
-    self.BuildStatement = r.right - r.left, r.bottom - r.top, r[0], r[1], r[2], r[3]
-    self.RenderToBuffer = self.StrFileHeader.format( self.BuildStatement )
+    ### clean the BuildStatement.
+    self.BuildStatementAttr = self.setStoreFloat 
+    self.BuildStatement = float(r.right - r.left), float(r.bottom - r.top), r[0], r[1], r[2], r[3]
+    self.TemplateToValueParser( self.StrFileHeader )
+    del self.BuildStatementAttr
+    self.BuildStatementAttr = self.setValue
+
+    #self.RenderToBuffer = self.StrFileHeader.format( self.BuildStatement )
     #self.f.write("<!-- %s -->\n" % (str(data.extents)))
     #self.f.write("<!-- %s -->\n" % (data.active_layer.name))
 
@@ -749,13 +799,18 @@ class SvgWebRenderer( SvgLxmlEngine ) :
 
   def draw_ellipse (self, center, width, height, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    self.BuildStatement = center.x, center.y, width / 2, height / 2, self._colorSpace(color), self.line_width, self._stroke_style()
+    #parameter cx, cy, rx, ry, stroke, stroke-width ; ? 
+    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , self._colorSpace(color), 
     self.TemplateToValueParser( self.DrawEllipseTemplate )
       
 
   def fill_ellipse (self, center, width, height, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    self.BuildStatement = center.x, center.y, width / 2, height / 2, self._colorSpace(color)
+    #parameter: cx, cy, rx, ry, fill:color,
+    ColorSpace=self._colorSpace(color)
+    RadiusH=height / 2
+    RadiusW=width / 2
+    self.BuildStatement = center.x, center.y, RadiusW, RadiusH, ColorSpace
     self.TemplateToValueParser( self.DrawFillEllipseTemplate )
 
   def draw_bezier (self, bezpoints, color) :
@@ -792,7 +847,8 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
     #del self.BuildStatement, see message inside TemplateToValueParser .
     ### This BuildStatement hold 9 variables to parse within this Template.
-    self.BuildStatement = pos.x, pos.y, self._colorSpace(color), talign, self.font_size,
+    #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
+    self.BuildStatement = pos.x, pos.y, talign ,self.font_size, self._colorSpace(color),
     self.font.family, fstyle,  fweight, self.TextSubst( text )
     self.TemplateToValueParser( self.DrawStringTemplate )
 
@@ -837,43 +893,56 @@ class SvgWebRenderer( SvgLxmlEngine ) :
       del self.BuildStatement
     return StrBezier 
 
-  def _testColorSpaceName( color, StrName ):
-    IsColorInAttr=True
-    ColorAttr=self.ColorSpace[StrName] 
-    for ColorName in ColorAttr:
-      if IsColorInAttr is True:
-        if not hasattr( color , ColorName ):
-          IsColorInAttr=False
+  def _testColorSpaceName( self, color, StrName ):
+    IsColorInAttr=False
+    for ColorName in self.ColorSpace[StrName]:
+      if IsColorInAttr is False:
+        if hasattr( color , ColorName ):
+          IsColorInAttr=True
+    if IsColorInAttr == True:
+      print "Color Space is : {}, using componnent named:{}".format( StrName, str( self.ColorSpace[StrName] ) )
     return IsColorInAttr
 
   def _colorSpace(self, color) :
     # given a dia color convert to svg color string
     # a tweak in case creator of Dia opt for opacity
     # in diagram...
-    StrTemplateChoice=self.Color3SpaceTemplate
+    self.BuildStatementAttr = self.setStoreFloat
+    StrColorSpace=str()
+    StrTemplateChoice=str(self.Color3SpaceTemplate)
     ### Testing if atribute 'red' or 'hue' exist...
-    if self._testColorSpaceName( color, 'RGB' ):
-      ### This mean color are coded in RGB style. 
-      self.VariableFormat = int(255 * color.red),int(color.green * 255),int(color.blue * 255)
-    if self._testColorSpaceName( color, 'HSV' ):
+    if self._testColorSpaceName( color, 'RGB' ) == True :
+      ### This mean color are coded in RGB style.
+      Red=int( color.red ) * 255
+      Green=int( color.green ) * 255
+      Blue=int( color.blue ) * 255
+      self.BuildStatement = Red, Green, Blue
+      print "Actual color value:[#{:02X}{:02X}{:02X}]".format( Red, Green, Blue )
+    if self._testColorSpaceName( color, 'HSV' ) == True  :
       ### This mean color are coded in HSV style. 
-      self.VariableFormat = int(255 * color.hue),int(color.saturation * 255),int(color.value * 255)
+      self.BuildStatement = 255 * int(color.hue),255 * int(color.saturation),255 *int(color.value)
     if hasattr( color , 'opacity'):
       ### make an addition, adding color in 4 spaces instead, and adding opacity at the end....
       ### How beautiful are Property, simplify the branching statement like to not
       ### develop and opacity branch-condition if the attribute does or does not exist.
-      StrTemplateChoice=self.Color4SpaceTemplate
-      self.VariableFormat = int(color.opacity * 255)
-
-    rgb = StrTemplateChoice.format( self.VariableFormat )
+      StrTemplateChoice=str(self.Color4SpaceTemplate)
+      self.BuildStatement = 255 * int(color.opacity)
+    
+    
+    print "Template used to convert to hexadecimal:[{}]".format( StrTemplateChoice )
+    print "Current value: {}".format( self.BuildStatement )
+    StrColorSpace = StrTemplateChoice.format( self.BuildStatement )
+    print "Should return color:{}".format( StrColorSpace ) 
     # And it's extremely inportant to reset the VariableFormat since
     # it's commonly use to build a stroke and do introduce
     # color... This mean, and SHOULD HAVE to execute _colorSpace(...) before
     # it's template to parse...
-    del self.VariableFormat   
-    return rgb
+    del self.BuildStatement
+    self.BuildStatementAttr = self.setValue
+    return StrColorSpace
 
   def _line_space_style( self ):
+    del self.VariableFormat
     StrTypeLine="{}"
     # return the current line style as svg string
     dashlen =self.dash_length
@@ -974,15 +1043,15 @@ IntPidDia=GetIntPid( r'(?u)^[a-zA-Z\-]*dia[a-zA-Z\-]*' )
 try:
   if IntPidDia != None:
     print "dia application found: PID: {}".format( IntPidDia )
-  else:
-    raise NameError
     try:
       import dia
+      dia.register_export ("SVG plain (uses of style attribute)", "svg", SvgWebRenderer())
+      dia.register_export ("SVG Base64 (uses of style attribute)", "svg.base64", SvgBase64Codec())
+      dia.register_export ("SVG compressed (uses of style attribute)", "svgz", SvgCompression())
     except ImportError:
       print "This message happen because dia or pydia is not\nloaded from dia python console.\n\nTemporary   \"deferring\"   registration  of  module. \nThis python  module  is  loaded  out  of  a  dia\nenvironment; And  can be  loaded  from dia-python\nconsole  or  loading explicitly  pydia  modules\nfrom  « plug-ins / python » dia  path.\n\nSvgLxmlEngine class can be used alone."
-    dia.register_export ("SVG plain (uses of style attribute)", "svg", SvgWebRenderer())
-    dia.register_export ("SVG Base64 (uses of style attribute)", "svg.base64", SvgBase64Codec())
-    dia.register_export ("SVG compressed (uses of style attribute)", "svgz", SvgCompression())
+  else:
+    raise NameError
 except NameError :
   print """Module like SvgWebRenderer, SvgBase64Codec, SvgCompression, are dia or\npydia dependent and can not be loaded alone or out of dia c-API interface.\nSvgLxmlEngine class can be used alone.\n\n"""
   
