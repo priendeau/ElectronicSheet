@@ -165,14 +165,32 @@ class SvgLxmlEngine( object ):
     self.AttrNode = 'value'
     self.Node = etree.Element( self.Line )
     for AttrName in self.DictMeta[self.Line].keys():
-      self.line.set( AttrName , self.DictMeta[self.Line][AttrName]  )
+      self.Line.set( AttrName , self.DictMeta[self.Line][AttrName]  )
 
 
   def __init__( self ):
     self.SetLineTpl()
 
   def GetSvgLineString( self ):
-    return etree.tostring(self.line)
+    return etree.tostring(self.Line)
+
+  @staticmethod
+  def NameFunc( ):
+    """
+    This Decorator Will:
+      perform an Display output of the actual function entry.
+      - In second it will also store inside the Static Class AttributeGenerationDecor
+      all function entry until a trigger is set to save all the List content of actual
+      Dataflow of the application. 
+            
+    """
+    def decorator( func ):
+        def inner( *args ):
+          print "Entry in Function:{}".format( func.func_name )
+          func( *args )
+        return inner
+    return decorator
+
 
 class SvgWebRenderer( SvgLxmlEngine ) :
   
@@ -349,11 +367,21 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   ### additional information if a TypeError occur during
   ### parsing.
   ### 
-  StatementFormatList=[ 'value', 'format', 'storeFloat' ]
+  StatementFormatList=[ 'value', 'format', 'storeFloat', 'storeInt' ]
   setValue          = StatementFormatList[0]
   setFormat         = StatementFormatList[1]
   setStoreFloat     = StatementFormatList[2]
+  setStoreInt       = StatementFormatList[3]
 
+  ### Used by property StorageActionAttr .
+  BuildStatementAction = None 
+
+  ### used by property StorageReadAttr .
+  BuildStatementReader = None 
+
+  # used in function FormatTemplate and also 
+  # reffered in FormatTemplate to be associated with property VariableFormat
+  TemplateString = None 
 
   """
   Utility of Statement
@@ -384,6 +412,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   in comment and the arbritrary Xml elements with
   appropriate attribute. 
   """  
+
   Statement ={
   'Template':str(),
   'Result':str(),
@@ -467,7 +496,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     else:
       if self.PStatementDictIndex == None:
         ### From already existing Statement
-        if value in self.has_attr( value ):
+        if value in hasattr(self, value ):
           if value == self.setTemplate :
             ### In case statement Template was already assign
             ### adding inside PStatementDictIndex the information
@@ -499,13 +528,139 @@ class SvgWebRenderer( SvgLxmlEngine ) :
 
 
   ###
-  ### Function for property BuildStatementAttr
+  ### Function for property BuildStatementAttr,
+  ### and daughter property StorageActionAttr, ReaderActionAttr
+  ### which configure and Action and a Reader to store and to
+  ### the information. 
   ###
   ### Notice: will be integrated in phase3 only. 
   ###
+
+  def Float( self, value):
+    return float( value )
+
+  def Int(self, value):
+    return int( value )
+  
+  def Str( self, value ):
+    return str( value )
+  
+  def valueAction( self, value ):
+    ### Getting the type of the value
+    ### in this case it both support int, float, str, as long they are
+    ### found inside __builtins__ class .
+    ### This candidate is good for both setValue and setFormat
+    AttrType=type( value ).__name__ 
+    print "SetBuildStatement Storing through function: {}\n\tStoring a Type:{}, value:[{}], order: {}".format( self.valueAction.__name__, AttrType, value , len(self.ListBuildStatement)+1 )
+    if AttrType not in [ 'float', 'int', 'str' ]:
+      self.ListBuildStatement.append( value )
+    else:
+      self.ListBuildStatement.append( getattr( self , AttrType.capitalize() )( value ) )
+      
+    ### This line is personally more efficient than :
+    ### 'eval( "{}( {} )".format(AttrType, value) )'
+    ### Other alternative include making our own self.float(), self.int() inside this
+    ### class to let call getter without __builtins__:
+    ### ex:
+    ### class SvgWebRenderer( SvgLxmlEngine ):
+    ###   Int( self, value ):
+    ###     return int( value )
+    ###   Float( self, value ):
+    ###     return float( value )
+    ###   def valueAction( self, value ):
+    ###     AttrType=type( value ).__name__ 
+    ###     self.ListBuildStatement.append( getattr( self , AttrType.capitalize() )( value ) )
+    ### 
+
+  def valueReader( self, ListItem ):
+    ### No Transformation 
+    return ListItem
+
+  def formatReader( self, ListItem ):
+    ### do Transform value into Type of value,
+    ### often used in value display during debug.
+    ReturnList=list()
+    for item in ListItem :
+      ValueStore="type:{}, value:[{}]"
+      ReturnList.append( ValueStore.format( type( item ).__name__, item ) )
+    return ReturnList 
+
+  def storeFloatAction( self, value ):
+    print "SetBuildStatement Storing through function: {}".format( self.storeFloatAction.__name__ )
+    self.ListBuildStatement.append( float( value ) )
+    ### This one is a candidate for BuildStatementAttr == setStoreFloat
+    ### allowing to use Setter from BuildStatement to store in Float format.
+
+  def storeFloatReader( self, ListItem  ):
+    ### Do ensure value are in Float type
+    ReturnList=list()
+    for item in ListItem:
+      ReturnList.append( float( item ) )
+    return ReturnList 
+
+  def storeIntAction( self, value ):
+    print "SetBuildStatement Storing through function: {}".format( self.storeIntAction.__name__ )
+    self.ListBuildStatement.append( int( value ) )
+    ### This one is a candidate for BuildStatementAttr == setStoreInt
+    ### allowing to use Setter from BuildStatement to store in Int format.
+
+  def storeIntReader( self, ListType ):
+    ### Do ensure value are in Int type 
+    ReturnList=list()
+    for item in ListType:
+      ReturnList.append( int( item ) )
+    return ReturnList 
+    
+
+  ###
+  ### Function for property StorageActionAttr
+  ### Unlike BuildStatement, have it's Attribute to configure
+  ### it's storage, StorageActionAttr, is another sub-property
+  ### to use unique Attribute in storage to avoid 
+  ### overdevelopping Agent to filter condition during storage 
+  ### action, It does configure a name to store the information.
+  ###
+  def SetStorageActionAttr( self , value ):
+    if value in self.StatementFormatList :
+      if value in [ self.setValue, self.setFormat ]:
+        self.BuildStatementAction = "valueAction"
+      else:
+        self.BuildStatementAction = "{}Action".format( value )
+
+  def GetStorageActionAttr( self ):
+    return self.BuildStatementAction
+
+  def ResetStorageActionAttr( self ):
+    self.BuildStatementAction = None
+
+  StorageActionAttr = property(GetStorageActionAttr,SetStorageActionAttr, ResetStorageActionAttr )
+
+  def SetReaderActionAttr( self, value ):
+    ### Unlike SetStorageActionAttr, that do own exception like
+    ### choosing setValue or setFormat for either BuildStatementAttr
+    ### and StorageActionAttr does now own specific storage difference,
+    ### do own specificities to hold the value 'as-is' until they are
+    ### getting-out with a Getter. Here, There is an exception for
+    ### every value ReaderActionAttr may require to be set .
+    ### Notice, ReaderActionAttr is also setted like daughter of
+    ### StorageActionAttr and inside BuildStatementAttr. 
+    self.BuildStatementReader = "{}Reader".format( value )
+
+  def GetReaderActionAttr( self ):
+    return self.BuildStatementReader
+
+  def ResetReaderActionAttr( self ):
+    self.BuildStatementReader = None 
+
+
+  ReaderActionAttr = property(GetReaderActionAttr,SetReaderActionAttr, ResetReaderActionAttr )
+
   def SetBSAttr( self, value ):
     if value in self.StatementFormatList:
       self.BuildStatementValue = value
+      ### Configuring the StorageActionAttr at the same times. 
+      self.StorageActionAttr = value
+      self.ReaderActionAttr = value 
     else:
       raise PropertyWarning, "BuildStatementAttr, Incorrect value assigned to this property, based on Setter {}".format( self.SetBSAttr.func_name )
 
@@ -514,16 +669,63 @@ class SvgWebRenderer( SvgLxmlEngine ) :
 
   def ResetBsAttr( self ):
     self.BuildStatementValue = None
+    ### Also Launching the Reset Member from following property:
+    del self.StorageActionAttr
+    del self.ReaderActionAttr 
 
   BuildStatementAttr = property( GetBSAttr, SetBSAttr, ResetBsAttr )
   
   ###
   ### Function for property BuildStatement
   ###
+  ### Notice: base
   ### BuildStatement, replace property
   ### VariableFormat, hence to have similar 
   ### design, but return information inside 
   ### dict Statement[Buffer]. 
+  ###
+  ### Notice1:
+  ### This part is clean since StorageActionAttr take
+  ### over this step and do propose an unique action
+  ### for all BuildStatementAttr value it can take
+  ###if self.BuildStatementAttr == self.setStoreFloat:
+  ###  for item in value:
+  ###       self.ListBuildStatement.append( float( item )  )
+  ###else:
+  ###  for item in value:
+  ###    self.ListBuildStatement.append( item )
+  ###
+  ### Notice2:
+  ###
+  ### Since StorageActionAttr is configured inside
+  ### BuildStatementAttr, it not required to code
+  ### specific exception for setStoreFloat, setStoreInt
+  ### ... valueAction, storeFloatAction, storeIntAction
+  ### are taking the value with uses of Getter of StorageActionAttr
+  ### this mean we should coding this sequence as getattr( self, self.StorageActionAttr )( item )
+  ### to take advantage of StorageActionAttr property. 
+  ### The Getter of StorageActionAttr get rid of all
+  ### theses lines. 
+  #if self.BuildStatementAttr == self.setStoreFloat:
+  #  self.ListBuildStatement.append( float(value) )
+  #else:
+  #  self.ListBuildStatement.append( value )
+  ###
+  ###
+  ### Notice3:
+  ### Actual uses of ReaderActionAttr does replace all this code
+  ### under Getter of BuildStatement.
+  ###
+  ##      if self.BuildStatementAttr == self.setStoreFloat:
+  ##        for item in self.ListBuildStatement:
+  ##          ReturnList.append( float(item) )
+  ##      if self.BuildStatementAttr == self.setValue:
+  ##        ReturnList=self.ListBuildStatement
+  ##    elif self.BuildStatementAttr == self.setFormat:
+  ##      for item in self.ListBuildStatement:
+  ##        ReturnList.append(type(item))
+  ##    return ReturnList 
+  ###
   ###
   ### Scheduled for phase2 
   ### 
@@ -543,32 +745,21 @@ class SvgWebRenderer( SvgLxmlEngine ) :
         
     if type(value) in self.PropertyTypeCheck :
       if len( value ) > 0:
-        if self.BuildStatementAttr == self.setStoreFloat:
-          for item in value:
-            print "SetBuildStatement Storing in float format"
-            self.ListBuildStatement.append( float( item )  )
-        else:
-          for item in value:
-            self.ListBuildStatement.append( item )
+        for item in value:
+          ### See Notice1 under Function for property BuildStatement
+          getattr( self, self.StorageActionAttr )( item )
     else:
-      if self.BuildStatementAttr == self.setStoreFloat:
-        self.ListBuildStatement.append( float(value) )
-      else:
-        self.ListBuildStatement.append( value )
+      ### See Notice2 under Function for property BuildStatement
+      getattr( self, self.StorageActionAttr )( value )
 
   def GetBuildStatement( self ):
-    ReturnList=[]
-    ReturnValueList=[ self.setValue, self.setStoreFloat ]
-    if self.BuildStatementAttr in ReturnValueList:
-      if self.BuildStatementAttr == self.setStoreFloat:
-        for item in self.ListBuildStatement:
-          ReturnList.append( float(item) )
-      if self.BuildStatementAttr == self.setValue:
-        ReturnList=self.ListBuildStatement
-    elif self.BuildStatementAttr == self.setFormat:
-      for item in self.ListBuildStatement:
-        ReturnList.append(type(item))
-    return ReturnList 
+    ###ReturnList=[]
+    ###ReturnValueList=[ self.setValue, self.setStoreFloat ]
+    ### No longer needed since all value BuildStatementAttr may
+    ### take will have a StoreAction and a Reader associated. 
+    ###if self.BuildStatementAttr in ReturnValueList:
+      ### See Notice3 under Function for property BuildStatement
+    return getattr( self, self.ReaderActionAttr )( self.ListBuildStatement )
 
   def DelBuildStatement( self ):
     """This is a Property-reset or reseting of the ListVariableFormat list. It also
@@ -624,28 +815,33 @@ check-validity in case receving argument."""
   ### End-of property VariableFormat
   ### 
 
+  @SvgLxmlEngine.NameFunc()
   def FormatStroke( self, StrDashType, StyleId  ):
     StrReturnFormat=str() 
     if len(self.VariableFormat) > 0:
-      StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] ).format( self.VariableFormat ) 
+      StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] ).format( *self.VariableFormat ) 
     else:
       StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] )
+    del self.VariableFormat 
+    print "FormatStroke return: DashType{}, StyleId{}, result:[ {} ]".format( self.StrokeType[StrDashType]['name'], self.StrokeType[StrDashType][StyleId], StrReturnFormat )
     return StrReturnFormat
 
   def FormatTemplate( self ):
     StrReturnFormat=str()
     if len(self.VariableFormat) > 0:
-      StrReturnFormat=self.TemplateString.format( self.VariableFormat ) 
+      StrReturnFormat=self.TemplateString.format( *self.VariableFormat ) 
     else:
       StrReturnFormat=self.TemplateString 
     return StrReturnFormat
 
   def TemplateToValueParser( self, StrTemplate ):
     try:
-      self.RenderToBuffer = StrTemplate.format( self.BuildStatement )
-    except TypeError, ValueError:
+      self.RenderToBuffer = StrTemplate.format( *self.BuildStatement )
+    except ( TypeError, ValueError, AttributeError ):
       self.BuildStatementAttr = self.setFormat
       print "Exception raised,\n\tTemplate:{}\n\tvalue:{}\n".format( StrTemplate, str(self.BuildStatement) )
+      ### Required to erase the self.BuildStatement, even if the exception is raised:
+      del self.BuildStatement
       #self.BuildStatementAttr = self.setFormat
       #print "Template:{},\nValue by type:{}\n".format( self.BuildStatement )
     else:
@@ -692,73 +888,92 @@ check-validity in case receving argument."""
   def end_render(self) :
     self.RenderToBuffer = self.TagElementSvgClosure
     self.FileWriter( )
-  
+
+  @SvgLxmlEngine.NameFunc()
   def set_linewidth (self, width) :
     if width < 0.001 : # zero line width is invisble ?
       self.line_width = 0.001
     else :
       self.line_width = width
 
+  @SvgLxmlEngine.NameFunc()
   def set_linecaps (self, mode) :
     self.line_caps = mode
 
+  @SvgLxmlEngine.NameFunc()
   def set_linejoin (self, mode) :
     self.line_join = mode
 
+  @SvgLxmlEngine.NameFunc()
   def set_linestyle (self, style) :
     self.line_style = style
 
+  @SvgLxmlEngine.NameFunc()
   def set_dashlength (self, length) :
     self.dash_length = length
 
+  @SvgLxmlEngine.NameFunc()
   def set_fillstyle (self, style) :
     # currently only 'solid' so not used anywhere else
     self.fill_style = style
 
+  @SvgLxmlEngine.NameFunc()
   def set_font (self, font, size) :
     self.font = font
     self.font_size = size
 
+  @SvgLxmlEngine.NameFunc()
   def draw_line (self, start, end, color) :
     del self.BuildStatement
-    self.BuildStatement = start.x, start.y, end.x, end.y, self._colorSpace(color), self.line_width, self._stroke_style()
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = start.x, start.y, end.x, end.y, ColorSpace, self.line_width, self._stroke_style()
     self.TemplateToValueParser( self.DrawLineTemplate )    
     
-  def _getPointString( self, point ):
+  @SvgLxmlEngine.NameFunc()
+  def _getPointString( self, points ):
     StrPointList=str()
     for pt in points :
       StrPointList += self.Point2DTemplate.format(pt.x, pt.y)
     return StrPointList
 
+  @SvgLxmlEngine.NameFunc()
   def draw_polyline (self, points, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    self.BuildStatement = self._colorSpace(color), self.line_width, self._stroke_style(), _getPointString( points ) 
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawPolyLineTemplate )
     
+  @SvgLxmlEngine.NameFunc()
   def draw_polygon (self, points, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    self.BuildStatement = self._colorSpace(color), self.line_width, self._stroke_style(), _getPointString( points ) 
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawPolygonTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def fill_polygon (self, points, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    self.BuildStatement = self._colorSpace(color), self.line_width , _getPointString( points ) 
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = ColorSpace, self.line_width , self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawFillPolygonTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def draw_rect (self, rect, color) :
-    #del self.BuildStatement , see message inside TemplateToValueParser . 
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-    self._colorSpace(color), self.line_width, self._stroke_style()
+    #del self.BuildStatement , see message inside TemplateToValueParser .
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, ColorSpace, self.line_width, self._stroke_style()
     self.TemplateToValueParser( self.DrawRectangleTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def fill_rect (self, rect, color) :
-    #del self.BuildStatement , see message inside TemplateToValueParser . 
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self._colorSpace(color)
+    #del self.BuildStatement , see message inside TemplateToValueParser .
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, ColorSpace
     self.TemplateToValueParser( self.DrawFillRectTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def _arc (self, center, width, height, angle1, angle2, color, fill=None) :
     # not in the renderer interface
-        
     mPi180 = math.pi / 180.0
     rx = width / 2.0
     ry = height / 2.0
@@ -770,7 +985,7 @@ check-validity in case receving argument."""
     sweep = 0 # always draw in negative direction
     #del self.BuildStatement , see message inside TemplateToValueParser . 
     self.BuildStatement = sx, sy, rx, ry, largearc, sweep, ex, ey 
-    StrArcPoint=self.DrawArcPointTemplate.format( self.BuildStatement )
+    StrArcPoint=self.DrawArcPointTemplate.format( *self.BuildStatement )
 
     if not fill :
       ### Since self.BuildStatement was used to parse self.DrawArcPointTemplate, which is
@@ -779,7 +994,8 @@ check-validity in case receving argument."""
       ### Other condition to use the Reset, DrawArcPointTemplate was parsed using the
       ### BuildStatement
       del self.BuildStatement
-      self.BuildStatement = self._colorSpace(color), self.line_width, self._stroke_style() , StrArcPoint
+      ColorSpace = self._colorSpace(color)
+      self.BuildStatement = ColorSpace, self.line_width, self._stroke_style() , StrArcPoint
       self.TemplateToValueParser( self.DrawArcNofillTemplate )
     else :
       ### Since self.BuildStatement was used to parse self.DrawArcPointTemplate, which is
@@ -788,22 +1004,28 @@ check-validity in case receving argument."""
       ### Other condition to use the Reset, DrawArcPointTemplate was parsed using the
       ### BuildStatement
       del self.BuildStatement
-      self.BuildStatement = self._colorSpace(color), StrArcPoint 
+      ColorSpace = self._colorSpace(color)
+      self.BuildStatement = ColorSpace, StrArcPoint 
       self.TemplateToValueParser( self.DrawArcFillTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def draw_arc (self, center, width, height, angle1, angle2, color) :
     self._arc(center, width, height, angle1, angle2, color)
 
+  @SvgLxmlEngine.NameFunc()
   def fill_arc (self, center, width, height, angle1, angle2, color) :
     self._arc(center, width, height, angle1, angle2, color, 1)
 
+  @SvgLxmlEngine.NameFunc()
   def draw_ellipse (self, center, width, height, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    #parameter cx, cy, rx, ry, stroke, stroke-width ; ? 
-    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , self._colorSpace(color), 
+    #parameter cx, cy, rx, ry, stroke, stroke-width ; ?
+    ColorSpace = self._colorSpace(color)
+    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , ColorSpace, 
     self.TemplateToValueParser( self.DrawEllipseTemplate )
       
 
+  @SvgLxmlEngine.NameFunc()
   def fill_ellipse (self, center, width, height, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
     #parameter: cx, cy, rx, ry, fill:color,
@@ -813,32 +1035,39 @@ check-validity in case receving argument."""
     self.BuildStatement = center.x, center.y, RadiusW, RadiusH, ColorSpace
     self.TemplateToValueParser( self.DrawFillEllipseTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def draw_bezier (self, bezpoints, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
     ### Unless it don't hold all the elements even part of complex one,
     ### it's useless to prepare a self.BuildStatement for color, line
     ### because the loop of bezpoints will throw an TypeError after first
     ### parsed elements and final template will hodl about nothing except
-    ### over-crowed informations. 
-    self.BuildStatement = self._colorSpace(color), self.line_width,
-    self._stroke_style(), self._getBezPoint( bezpoints  ) 
+    ### over-crowed informations.
+    ColorSpace = self._colorSpace(color)
+    StrBezPoint=self._getBezPoint( bezpoints  ) 
+    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), StrBezPoint
     self.TemplateToValueParser( self.DrawBezierTemplate )
     ### No more need to close an element, all template were adjusted to hold second level of
     ### parsing, making them complete instead of concatenating part
     #self.WriteBuffer( self.TagElementClosure )
 
+  @SvgLxmlEngine.NameFunc()
   def fill_bezier (self, bezpoints, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    self.BuildStatement = self._colorSpace(color), self.line_width , self._getBezPoint( bezpoints  )
+    ColorSpace = self._colorSpace(color)
+    StrBezPoint=self._getBezPoint( bezpoints  ) 
+    self.BuildStatement = ColorSpace , self.line_width , StrBezPoint
     self.TemplateToValueParser( self.DrawFillBezierTemplate )
     #self.WriteBuffer( self.TagElementClosure )
 
   # avoid writing XML special characters (ampersand must be first to not break the rest)
+  @SvgLxmlEngine.NameFunc()
   def TextSubst( self, StrVar ):
     for CharIndex in self.CharExceptionRepl :
       StrVar=StrVar.replace( CharIndex[0],CharIndex[1] )
     return StrVar 
 
+  @SvgLxmlEngine.NameFunc()
   def draw_string (self, text, pos, alignment, color) :
     if len(text) < 1 :
       return # shouldn'this be done at the higher level 
@@ -848,10 +1077,12 @@ check-validity in case receving argument."""
     #del self.BuildStatement, see message inside TemplateToValueParser .
     ### This BuildStatement hold 9 variables to parse within this Template.
     #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
-    self.BuildStatement = pos.x, pos.y, talign ,self.font_size, self._colorSpace(color),
-    self.font.family, fstyle,  fweight, self.TextSubst( text )
+    ColorSpace = self._colorSpace(color)
+    Text = self.TextSubst( text )
+    self.BuildStatement = pos.x, pos.y, talign ,self.font_size, ColorSpace, self.font.family, fstyle,  fweight, Text
     self.TemplateToValueParser( self.DrawStringTemplate )
 
+  @SvgLxmlEngine.NameFunc()
   def draw_image (self, point, width, height, image) :
     #FIXME : do something better than absolute pathes ?
     #del self.BuildStatement, see message inside TemplateToValueParser .
@@ -860,6 +1091,7 @@ check-validity in case receving argument."""
 
     # Helpers, not in the DiaRenderer interface
 
+  @SvgLxmlEngine.NameFunc()
   def _getBezPoint(self, bezpoints):
     StrBezier=str() 
     ### Since there is no information on bezpoints, they may have more than one
@@ -871,17 +1103,17 @@ check-validity in case receving argument."""
         ### BuildStatement -> [ self._rgb(color), self.line_width, self._stroke_style() ] AND
         ### formatted self.BezierMoveToTemplate 
         self.BuildStatement = bp.p1.x, bp.p1.y 
-        StrBezier+=self.BezierMoveToTemplate.format( self.BuildStatement )
+        StrBezier+=self.BezierMoveToTemplate.format( *self.BuildStatement )
       elif bp.type == 1 : # BEZ_LINE_TO
         ### Same as *Part1, except it's self.BezierLineToTemplate that is the end
         ### element introduced inside BuildStatement 
         self.BuildStatement = bp.p1.x, bp.p1.y
-        StrBezier+=self.BezierLineToTemplate.format( self.BuildStatement )
+        StrBezier+=self.BezierLineToTemplate.format( *self.BuildStatement )
       elif bp.type == 2 : # BEZ_CURVE_TO
         ### Same as *Part1, except it's self.BezierLineToTemplate that is the end
         ### element introduced inside BuildStatement 
         self.BuildStatement = bp.p1.x, bp.p1.y, bp.p2.x, bp.p2.y, bp.p3.x, bp.p3.y
-        StrBezier+=self.BezierCurveToTemplate.format( self.BuildStatement )
+        StrBezier+=self.BezierCurveToTemplate.format( *self.BuildStatement )
       else :
         dia.message(2, "Invalid BezPoint type (%d)" * bp.type)
       ### Since a loop-resence does enforce the fact BuildStatement will receive
@@ -899,26 +1131,27 @@ check-validity in case receving argument."""
       if IsColorInAttr is False:
         if hasattr( color , ColorName ):
           IsColorInAttr=True
-    if IsColorInAttr == True:
+    if IsColorInAttr is True:
       print "Color Space is : {}, using componnent named:{}".format( StrName, str( self.ColorSpace[StrName] ) )
     return IsColorInAttr
 
+  @SvgLxmlEngine.NameFunc()
   def _colorSpace(self, color) :
     # given a dia color convert to svg color string
     # a tweak in case creator of Dia opt for opacity
     # in diagram...
-    self.BuildStatementAttr = self.setStoreFloat
+    self.BuildStatementAttr = self.setStoreInt
     StrColorSpace=str()
     StrTemplateChoice=str(self.Color3SpaceTemplate)
     ### Testing if atribute 'red' or 'hue' exist...
-    if self._testColorSpaceName( color, 'RGB' ) == True :
+    if self._testColorSpaceName( color, 'RGB' ) is True :
       ### This mean color are coded in RGB style.
       Red=int( color.red ) * 255
       Green=int( color.green ) * 255
       Blue=int( color.blue ) * 255
       self.BuildStatement = Red, Green, Blue
       print "Actual color value:[#{:02X}{:02X}{:02X}]".format( Red, Green, Blue )
-    if self._testColorSpaceName( color, 'HSV' ) == True  :
+    if self._testColorSpaceName( color, 'HSV' ) is True  :
       ### This mean color are coded in HSV style. 
       self.BuildStatement = 255 * int(color.hue),255 * int(color.saturation),255 *int(color.value)
     if hasattr( color , 'opacity'):
@@ -931,7 +1164,7 @@ check-validity in case receving argument."""
     
     print "Template used to convert to hexadecimal:[{}]".format( StrTemplateChoice )
     print "Current value: {}".format( self.BuildStatement )
-    StrColorSpace = StrTemplateChoice.format( self.BuildStatement )
+    StrColorSpace = StrTemplateChoice.format( *self.BuildStatement )
     print "Should return color:{}".format( StrColorSpace ) 
     # And it's extremely inportant to reset the VariableFormat since
     # it's commonly use to build a stroke and do introduce
@@ -941,6 +1174,7 @@ check-validity in case receving argument."""
     self.BuildStatementAttr = self.setValue
     return StrColorSpace
 
+  @SvgLxmlEngine.NameFunc()
   def _line_space_style( self ):
     del self.VariableFormat
     StrTypeLine="{}"
@@ -964,9 +1198,10 @@ check-validity in case receving argument."""
     if self.line_style != 0:
       StrTypeLine=StrTypeLine.format( self.FormatStroke( 'dasharray', style ) )
           
-    del self.VariableFormat
+    #del self.VariableFormat
     return StrTypeLine
 
+  @SvgLxmlEngine.NameFunc()
   def _line_join_style( self ):
     StrLineJoin="{}"
     if self.line_join == 0 : # MITER
@@ -975,6 +1210,7 @@ check-validity in case receving argument."""
       StrLineJoin=StrLineJoin.format( self.FormatStroke( 'linejoin', self.line_join ) )
     return StrLineJoin 
 
+  @SvgLxmlEngine.NameFunc()
   def _line_caps_style( self ):
     StrLineCaps="{}"
     if self.line_caps == 0 : # BUTT
@@ -983,10 +1219,13 @@ check-validity in case receving argument."""
       StrLineCaps=StrLineCaps.format( self.FormatStroke( 'linecap', self.line_caps ) )
     return StrLineCaps
 
+  @SvgLxmlEngine.NameFunc()
   def _stroke_style(self) :
-    self._line_space_style() 
-    StrStrokeStyle = "{0}{1}{2}"
-    StrStrokeStyle=StrStrokeStyle.format( self._line_space_style() , self._line_join_style(), self._line_caps_style() )
+    #self._line_space_style() 
+    StrStrokeStyle = "{}{}{}"
+    StrStrokeStyle=StrStrokeStyle.format( self._line_space_style() ,
+                                          self._line_join_style()  ,
+                                          self._line_caps_style()  )
 
 class SvgCompression(SvgWebRenderer) :
 
@@ -1039,7 +1278,7 @@ def GetIntPid( diaRegularExpression ):
 
 
 
-IntPidDia=GetIntPid( r'(?u)^[a-zA-Z\-]*dia[a-zA-Z\-]*' )
+IntPidDia=GetIntPid( r'(?u)^([a-zA-Z\-_]*dia|dia)+[a-zA-Z\-_]+' )
 try:
   if IntPidDia != None:
     print "dia application found: PID: {}".format( IntPidDia )
