@@ -112,8 +112,45 @@ class PropertyWarning( Warning ):
   def __init__( self, value ):
     Warning.__init__( self, self.StrMsg.format( value ) )
 
+class EmptyTextString( Warning ):
+  StrMsg = 'Warning raised for Empty Text-String found inside Text-Vector, {}'
 
-class SvgLxmlEngine( object ):
+  def __init__( self, value ):
+    Warning.__init__( self, self.StrMsg.format( value ) )
+
+
+class FunctionDecorator( object ):
+
+  @staticmethod
+  def FunctionPrint( ListIndex ):
+    StrPrint=str()
+    if len( ListIndex ) <= 1:
+      StrPrint="{} ".format( item )
+    else:
+      for item in ListIndex:
+        StrPrint += " {}-> ".format( item )
+    return StrPrint
+  
+  @staticmethod
+  def NameFunc( ListIndex ):
+    """
+    This Decorator Will:
+      perform an Display output of the actual function entry.
+          
+    """
+    def decorator( func ):
+        def inner( *args ):
+          ListIndex.append( func.func_name )
+          print "Entry in Function:{}".format( FunctionDecorator.FunctionPrint( ListIndex ) )
+          func( *args )
+          ListIndex.pop() 
+        return inner
+    return decorator
+
+  
+
+
+class SvgLxmlEngine( FunctionDecorator ):
 
   DictMeta = { 'line':
          {'attr':{'x1':'%.3f',
@@ -174,25 +211,15 @@ class SvgLxmlEngine( object ):
   def GetSvgLineString( self ):
     return etree.tostring(self.Line)
 
-  @staticmethod
-  def NameFunc( ):
-    """
-    This Decorator Will:
-      perform an Display output of the actual function entry.
-      - In second it will also store inside the Static Class AttributeGenerationDecor
-      all function entry until a trigger is set to save all the List content of actual
-      Dataflow of the application. 
-            
-    """
-    def decorator( func ):
-        def inner( *args ):
-          print "Entry in Function:{}".format( func.func_name )
-          func( *args )
-        return inner
-    return decorator
-
-
 class SvgWebRenderer( SvgLxmlEngine ) :
+
+  ### 
+  ### This List is used to add the function after a function with decorator NameFunc
+  ### is used. Once the function end, the decorator remove the last function by poping
+  ### it-out. The display consist of a cast of a list() in string and do show if more
+  ### than one function is used and have not exited ( function using another function).
+  ### 
+  ListFunctionReference = list()  
   
   StrFileHeader   = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created by DiaSvgWebIntegration for web edition -->
@@ -244,7 +271,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
           3:'{:s}:{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f};',
           4:'{:s}:{:.2f},{:.2f};'},
   'linejoin':{ 'name':'stroke-linejoin' ,
-         0:'',
+         0:'{:s}:none;',
          1:'{:s}:round;',
          2:'{:s}:bevel;'},
   'linecaps':{ 'name':'stroke-linecap',
@@ -425,14 +452,18 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   PStatementDictIndex = None
   PBuildStatement     = None
   
-  def __init__ (self):
-    self.FileHandler  = None
-    self.line_width   = 0.1
-    self.line_caps    = 0
-    self.line_join    = 0
-    self.line_style   = 0
-    self.dash_length  = 0
-    self.Buffer       = StringIO()
+  def __init__ ( self ):
+    super( SvgLxmlEngine, self ).__init__(  )
+    self.FileHandler      = None
+    self.line_width       = 0.1
+    self.line_caps        = 0
+    self.line_join        = 0
+    self.line_style       = 0
+    self.dash_length      = 0
+    self.Text             = None 
+    self.BezPointsList    = None 
+    self.Buffer           = StringIO()
+    self.ColorSpaceObject = None 
 
   def SetBuffer( self, value ):
     self.Buffer.write( value )
@@ -815,8 +846,9 @@ check-validity in case receving argument."""
   ### End-of property VariableFormat
   ### 
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def FormatStroke( self, StrDashType, StyleId  ):
+    print "dasharray configuration:{}".format( str( self.VariableFormat ) )
     StrReturnFormat=str() 
     if len(self.VariableFormat) > 0:
       StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] ).format( *self.VariableFormat ) 
@@ -834,6 +866,37 @@ check-validity in case receving argument."""
       StrReturnFormat=self.TemplateString 
     return StrReturnFormat
 
+
+  ### Function: ValueFormatHandler
+  ### A function to replace hand-made format and aim to return
+  ### the error withing parsing problem. in common function some
+  ### call of self.VariableFormat or self.BuildStatement simply
+  ### not working. This function does the same as:
+  ###
+  ### self.[NAME] = [Template].format( property([self.VariableFormat|self.BuildStatement]))
+  ### And it throw you the error, showing you the template and
+  ### display elements not
+  ###
+  ### Demonstration of uses:
+  ###
+  ### this line :
+  ### StrArcPoint=self.DrawArcPointTemplate.format( *self.BuildStatement )
+  ### Will be replaced by 
+  ### self.ValueFormatHandler( self.DrawArcPointTemplate, 'BuildStatement', 'ArcPoint' )
+  ### it will generate a self.ArcPoint accessible everywhere in the class. 
+  ###
+  ###
+  def ValueFormatHandler( self, StrTemplate, AttrProperty, AttrClassName ):
+    StrParse=str()
+    try:
+      StrParse=getattr( StrTemplate, 'format')( *getattr(self,AttrProperty) )
+    except( TypeError, ValueError, AttributeError ):
+      print "Exception raised,\n\tTemplate:{}\n\tvalue:{}\n".format( StrTemplate, str( getattr( self, AttrProperty ) ) )
+    else:
+      print "Sucessfully parsed Template:\n\t{}".format( StrTemplate.format( *getattr( self, AttrProperty ) ) )
+      getattr( getattr( self.__class__, AttrProperty ), 'fdel')()
+      setattr( self, AttrClassName, StrParse ) 
+
   def TemplateToValueParser( self, StrTemplate ):
     try:
       self.RenderToBuffer = StrTemplate.format( *self.BuildStatement )
@@ -845,6 +908,7 @@ check-validity in case receving argument."""
       #self.BuildStatementAttr = self.setFormat
       #print "Template:{},\nValue by type:{}\n".format( self.BuildStatement )
     else:
+      print "Sucessfully parsed Template:\n\t{}".format( StrTemplate.format( *self.BuildStatement ) )
       ### It's important to free the BuildStatement property, to let the new statement
       ### of vector adding new information without leaving anciens one and let the
       ### String.format(...) throwing a TypeError . 
@@ -889,89 +953,89 @@ check-validity in case receving argument."""
     self.RenderToBuffer = self.TagElementSvgClosure
     self.FileWriter( )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_linewidth (self, width) :
     if width < 0.001 : # zero line width is invisble ?
       self.line_width = 0.001
     else :
       self.line_width = width
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_linecaps (self, mode) :
     self.line_caps = mode
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_linejoin (self, mode) :
     self.line_join = mode
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_linestyle (self, style) :
     self.line_style = style
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_dashlength (self, length) :
     self.dash_length = length
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_fillstyle (self, style) :
     # currently only 'solid' so not used anywhere else
     self.fill_style = style
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_font (self, font, size) :
     self.font = font
     self.font_size = size
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_line (self, start, end, color) :
     del self.BuildStatement
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = start.x, start.y, end.x, end.y, ColorSpace, self.line_width, self._stroke_style()
+    self._colorSpace( color )
+    self.BuildStatement = start.x, start.y, end.x, end.y, self.ColorSpaceObject, self.line_width, self._stroke_style()
     self.TemplateToValueParser( self.DrawLineTemplate )    
     
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _getPointString( self, points ):
     StrPointList=str()
     for pt in points :
       StrPointList += self.Point2DTemplate.format(pt.x, pt.y)
     return StrPointList
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_polyline (self, points, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), self._getPointString( points ) 
+    self._colorSpace(color)
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawPolyLineTemplate )
     
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_polygon (self, points, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), self._getPointString( points ) 
+    self._colorSpace(color)
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawPolygonTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_polygon (self, points, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = ColorSpace, self.line_width , self._getPointString( points ) 
+    self._colorSpace(color)
+    self.BuildStatement = self.ColorSpaceObject, self.line_width , self._getPointString( points ) 
     self.TemplateToValueParser( self.DrawFillPolygonTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_rect (self, rect, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, ColorSpace, self.line_width, self._stroke_style()
+    self._colorSpace(color)
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject, self.line_width, self._stroke_style()
     self.TemplateToValueParser( self.DrawRectangleTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_rect (self, rect, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, ColorSpace
+    self._colorSpace(color)
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject
     self.TemplateToValueParser( self.DrawFillRectTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _arc (self, center, width, height, angle1, angle2, color, fill=None) :
     # not in the renderer interface
     mPi180 = math.pi / 180.0
@@ -994,8 +1058,8 @@ check-validity in case receving argument."""
       ### Other condition to use the Reset, DrawArcPointTemplate was parsed using the
       ### BuildStatement
       del self.BuildStatement
-      ColorSpace = self._colorSpace(color)
-      self.BuildStatement = ColorSpace, self.line_width, self._stroke_style() , StrArcPoint
+      self._colorSpace(color)
+      self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style() , StrArcPoint
       self.TemplateToValueParser( self.DrawArcNofillTemplate )
     else :
       ### Since self.BuildStatement was used to parse self.DrawArcPointTemplate, which is
@@ -1004,38 +1068,39 @@ check-validity in case receving argument."""
       ### Other condition to use the Reset, DrawArcPointTemplate was parsed using the
       ### BuildStatement
       del self.BuildStatement
-      ColorSpace = self._colorSpace(color)
-      self.BuildStatement = ColorSpace, StrArcPoint 
+      self._colorSpace(color)
+      self.BuildStatement = self.ColorSpaceObject, StrArcPoint 
       self.TemplateToValueParser( self.DrawArcFillTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_arc (self, center, width, height, angle1, angle2, color) :
     self._arc(center, width, height, angle1, angle2, color)
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_arc (self, center, width, height, angle1, angle2, color) :
     self._arc(center, width, height, angle1, angle2, color, 1)
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_ellipse (self, center, width, height, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
     #parameter cx, cy, rx, ry, stroke, stroke-width ; ?
-    ColorSpace = self._colorSpace(color)
-    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , ColorSpace, 
+    self._colorSpace(color)
+    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , self.ColorSpaceObject
     self.TemplateToValueParser( self.DrawEllipseTemplate )
       
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_ellipse (self, center, width, height, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
     #parameter: cx, cy, rx, ry, fill:color,
-    ColorSpace=self._colorSpace(color)
+    self._colorSpace( color )
+    print "ColorSpace return: {}".format( self.ColorSpaceObject )
     RadiusH=height / 2
     RadiusW=width / 2
-    self.BuildStatement = center.x, center.y, RadiusW, RadiusH, ColorSpace
+    self.BuildStatement = center.x, center.y, RadiusW, RadiusH, self.ColorSpaceObject
     self.TemplateToValueParser( self.DrawFillEllipseTemplate )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_bezier (self, bezpoints, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
     ### Unless it don't hold all the elements even part of complex one,
@@ -1043,46 +1108,49 @@ check-validity in case receving argument."""
     ### because the loop of bezpoints will throw an TypeError after first
     ### parsed elements and final template will hodl about nothing except
     ### over-crowed informations.
-    ColorSpace = self._colorSpace(color)
+    self._colorSpace(color)
     StrBezPoint=self._getBezPoint( bezpoints  ) 
-    self.BuildStatement = ColorSpace, self.line_width, self._stroke_style(), StrBezPoint
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), StrBezPoint
     self.TemplateToValueParser( self.DrawBezierTemplate )
     ### No more need to close an element, all template were adjusted to hold second level of
     ### parsing, making them complete instead of concatenating part
     #self.WriteBuffer( self.TagElementClosure )
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_bezier (self, bezpoints, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
-    ColorSpace = self._colorSpace(color)
+    self._colorSpace(color)
     StrBezPoint=self._getBezPoint( bezpoints  ) 
-    self.BuildStatement = ColorSpace , self.line_width , StrBezPoint
+    self.BuildStatement = self.ColorSpaceObject , self.line_width , StrBezPoint
     self.TemplateToValueParser( self.DrawFillBezierTemplate )
     #self.WriteBuffer( self.TagElementClosure )
 
   # avoid writing XML special characters (ampersand must be first to not break the rest)
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def TextSubst( self, StrVar ):
+    print "TextSubstitution, processing {} characters exception.".format( len(self.CharExceptionRepl) )
     for CharIndex in self.CharExceptionRepl :
       StrVar=StrVar.replace( CharIndex[0],CharIndex[1] )
-    return StrVar 
+    print "Text from String Vector:[{}]".format( StrVar )
+    self.Text=StrVar 
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_string (self, text, pos, alignment, color) :
-    if len(text) < 1 :
-      return # shouldn'this be done at the higher level 
-    talign = self.TextAlign [alignment]
-    fstyle = self.FontStyleT [self.font.style & 0x03]
-    fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
-    #del self.BuildStatement, see message inside TemplateToValueParser .
-    ### This BuildStatement hold 9 variables to parse within this Template.
-    #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
-    ColorSpace = self._colorSpace(color)
-    Text = self.TextSubst( text )
-    self.BuildStatement = pos.x, pos.y, talign ,self.font_size, ColorSpace, self.font.family, fstyle,  fweight, Text
-    self.TemplateToValueParser( self.DrawStringTemplate )
-
-  @SvgLxmlEngine.NameFunc()
+    if len(text) > 1 :
+      talign = self.TextAlign [alignment]
+      fstyle = self.FontStyleT [self.font.style & 0x03]
+      fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
+      #del self.BuildStatement, see message inside TemplateToValueParser .
+      ### This BuildStatement hold 9 variables to parse within this Template.
+      #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
+      self._colorSpace(color)
+      self.TextSubst( text )
+      self.BuildStatement = pos.x, pos.y, talign ,self.font_size, self.ColorSpaceObject, self.font.family, fstyle,  fweight, self.Text
+      self.TemplateToValueParser( self.DrawStringTemplate )
+    else:
+      raise EmptyTextString 
+    
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_image (self, point, width, height, image) :
     #FIXME : do something better than absolute pathes ?
     #del self.BuildStatement, see message inside TemplateToValueParser .
@@ -1091,7 +1159,7 @@ check-validity in case receving argument."""
 
     # Helpers, not in the DiaRenderer interface
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _getBezPoint(self, bezpoints):
     StrBezier=str() 
     ### Since there is no information on bezpoints, they may have more than one
@@ -1123,7 +1191,8 @@ check-validity in case receving argument."""
       ### should be empty, be cause This section fill information for the last
       ### elements, it will be inserted (StrBezier) at the end.
       del self.BuildStatement
-    return StrBezier 
+    
+    #return StrBezier 
 
   def _testColorSpaceName( self, color, StrName ):
     IsColorInAttr=False
@@ -1135,22 +1204,18 @@ check-validity in case receving argument."""
       print "Color Space is : {}, using componnent named:{}".format( StrName, str( self.ColorSpace[StrName] ) )
     return IsColorInAttr
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _colorSpace(self, color) :
     # given a dia color convert to svg color string
     # a tweak in case creator of Dia opt for opacity
     # in diagram...
     self.BuildStatementAttr = self.setStoreInt
-    StrColorSpace=str()
     StrTemplateChoice=str(self.Color3SpaceTemplate)
     ### Testing if atribute 'red' or 'hue' exist...
     if self._testColorSpaceName( color, 'RGB' ) is True :
       ### This mean color are coded in RGB style.
-      Red=int( color.red ) * 255
-      Green=int( color.green ) * 255
-      Blue=int( color.blue ) * 255
-      self.BuildStatement = Red, Green, Blue
-      print "Actual color value:[#{:02X}{:02X}{:02X}]".format( Red, Green, Blue )
+      self.BuildStatement = int( color.red ) * 255, int( color.green ) * 255, int( color.blue ) * 255
+      print "Actual color value:[#{:02X}{:02X}{:02X}]".format( *self.BuildStatement )
     if self._testColorSpaceName( color, 'HSV' ) is True  :
       ### This mean color are coded in HSV style. 
       self.BuildStatement = 255 * int(color.hue),255 * int(color.saturation),255 *int(color.value)
@@ -1160,21 +1225,17 @@ check-validity in case receving argument."""
       ### develop and opacity branch-condition if the attribute does or does not exist.
       StrTemplateChoice=str(self.Color4SpaceTemplate)
       self.BuildStatement = 255 * int(color.opacity)
-    
-    
-    print "Template used to convert to hexadecimal:[{}]".format( StrTemplateChoice )
-    print "Current value: {}".format( self.BuildStatement )
-    StrColorSpace = StrTemplateChoice.format( *self.BuildStatement )
-    print "Should return color:{}".format( StrColorSpace ) 
+
+    self.ColorSpaceObject = StrTemplateChoice.format( *self.BuildStatement )    
     # And it's extremely inportant to reset the VariableFormat since
     # it's commonly use to build a stroke and do introduce
     # color... This mean, and SHOULD HAVE to execute _colorSpace(...) before
     # it's template to parse...
     del self.BuildStatement
-    self.BuildStatementAttr = self.setValue
-    return StrColorSpace
+    #self.BuildStatementAttr = self.setValue
+    #return StrColorSpace
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _line_space_style( self ):
     del self.VariableFormat
     StrTypeLine="{}"
@@ -1197,29 +1258,34 @@ check-validity in case receving argument."""
 
     if self.line_style != 0:
       StrTypeLine=StrTypeLine.format( self.FormatStroke( 'dasharray', style ) )
-          
+
+    print "dasharray: {}".format( str( self.VariableFormat ) )
     #del self.VariableFormat
     return StrTypeLine
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _line_join_style( self ):
     StrLineJoin="{}"
     if self.line_join == 0 : # MITER
       StrLineJoin=""
     else:
-      StrLineJoin=StrLineJoin.format( self.FormatStroke( 'linejoin', self.line_join ) )
+      StrFormatStrk=self.FormatStroke( 'linejoin', self.line_join )
+      print "FormatStroke return: {}".format( StrFormatStrk )
+      StrLineJoin=StrLineJoin.format( StrFormatStrk )
+    print "linejoin: {}".format( self.line_join )
     return StrLineJoin 
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _line_caps_style( self ):
     StrLineCaps="{}"
     if self.line_caps == 0 : # BUTT
       StrLineCaps=""
     else:
       StrLineCaps=StrLineCaps.format( self.FormatStroke( 'linecap', self.line_caps ) )
+    print "line_caps: {}".format( self.line_caps )
     return StrLineCaps
 
-  @SvgLxmlEngine.NameFunc()
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _stroke_style(self) :
     #self._line_space_style() 
     StrStrokeStyle = "{}{}{}"
