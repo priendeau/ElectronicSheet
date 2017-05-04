@@ -105,6 +105,7 @@ import sys, io, re, os, os.path ,string, base64, gzip, math
 from io import StringIO
 from StringIO import StringIO
 from lxml import etree
+import wx
 
 class PropertyWarning( Warning ):
   StrMsg = 'Warning on property, {}'
@@ -113,7 +114,7 @@ class PropertyWarning( Warning ):
     Warning.__init__( self, self.StrMsg.format( value ) )
 
 class EmptyTextString( Warning ):
-  StrMsg = 'Warning raised for Empty Text-String found inside Text-Vector, {}'
+  StrMsg = 'Warning raised for Empty Text-String found inside Text-Vector :[{}]'
 
   def __init__( self, value ):
     Warning.__init__( self, self.StrMsg.format( value ) )
@@ -124,6 +125,7 @@ class FunctionDecorator( object ):
   @staticmethod
   def FunctionPrint( ListIndex ):
     StrPrint=str()
+    item=None 
     if len( ListIndex ) <= 1:
       StrPrint="{} ".format( item )
     else:
@@ -223,7 +225,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   
   StrFileHeader   = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created by DiaSvgWebIntegration for web edition -->
-<svg width="{:.3f}cm" height="{:.3f}cm" viewBox="{:0.0f} {:0.0f} {:0.0f} {:0.0f}"
+<svg width="{:0.3f}cm" height="{:0.3f}cm" viewBox="{:0.3f} {:0.3f} {:0.3f} {:0.3f}"
  xmlns:dc="http://purl.org/dc/elements/1.1/"
  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
  xmlns:cc="http://creativecommons.org/ns#"
@@ -231,31 +233,32 @@ class SvgWebRenderer( SvgLxmlEngine ) :
  xmlns:xlink="http://www.w3.org/1999/xlink">\n"""
 
   ErrorLineTemplate         = """<!-- {} -->\n"""
-  DrawLineTemplate          = """\t<line x1="{:.3f}" y1="{:.3f}" x2="{:.3f}" y2="{:.3f}" style="stroke:{};stroke-width:{:.3f};" />\n"""
-  DrawPolyLineTemplate      = """\t<polyline style="fill:none;stroke:{};stroke-width:{:.3f};" points="{:s}" />\n"""
-  DrawPolygonTemplate       = """\t<polygon style="fill:none;stroke:{};stroke-width:{:.3f};" points="{:s}" />\n"""
-  DrawFillPolygonTemplate   = """\t<polygon style="fill:{};stroke:none;stroke-width:{:.3f};" points="{:s}" />\n"""
-  DrawRectangleTemplate     = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:none;stroke:{};stroke-width:{:.3f};" />\n"""
-  DrawFillRectTemplate      = """\t<rect x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" style="fill:{};stroke:none;stroke-width:0;"/>\n"""
-  DrawArcNofillTemplate     = """\t<path style="stroke:{};fill:none;stroke-width:{:.3f};" d="{:s}" />\n"""
-  DrawArcFillTemplate       = """\t<path style="fill:{};stroke:none;" d="{:s}" />\n"""
-  DrawArcPointTemplate      = """M {:.3f},{:.3f} A {:.3f},{:.3f} 0 {:d},{:d} {:.3f},{:.3f}"""
                             #parameter cx, cy, rx, ry, stroke, stroke-width ; ? 
-  DrawEllipseTemplate       = """\t<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:none;stroke:{};stroke-width:{:.3f};" />"""
+  DrawEllipseTemplate       = """<ellipse cx="{:0.3f}" cy="{:0.3f}" rx="{:0.3f}" ry="{:0.3f}" style="fill:none;stroke:{};stroke-width:{:0.3f};{}" />\n"""
+  DrawLineTemplate          = """<line x1="{:0.3f}" y1="{:0.3f}" x2="{:0.3f}" y2="{:0.3f}" style="stroke:{};stroke-width:{:0.3f};" />\n"""
+  DrawPolyLineTemplate      = """<polyline style="fill:none;stroke:{};stroke-width:{:0.3f};{}" points="{:s}" />\n"""
+  DrawPolygonTemplate       = """<polygon style="fill:none;stroke:{};stroke-width:{:0.3f};{}" points="{:s}" />\n"""
+  DrawRectangleTemplate     = """<rect x="{:0.3f}" y="{:0.3f}" width="{:0.3f}" height="{:0.3f}" style="fill:none;stroke:{};stroke-width:{:0.3f};{}" />\n"""
+  DrawArcNofillTemplate     = """<path style="stroke:{};fill:none;stroke-width:{:0.3f};" d="{:s}" />\n"""
+  DrawArcPointTemplate      = """M {:0.3f},{:0.3f} A {:0.3f},{:0.3f} 0 {:0.0f},{:0.0f} {:0.3f},{:0.3f}"""
+  DrawBezierTemplate        = """<path style="fill:none;stroke:{};stroke-width:{:0.3f};{}" d="{:s}" />\n"""
                             #parameter: cx, cy, rx, ry, fill:color, 
-  DrawFillEllipseTemplate   = """<ellipse cx="{:.3f}" cy="{:.3f}" rx="{:.3f}" ry="{:.3f}" style="fill:{};stroke:none;" />\n"""
-  DrawBezierTemplate        = """\t<path style="fill:none;stroke:{};stroke-width:{:.3f};" d="{:s}" />\n"""
-  BezierMoveToTemplate      = """M {:.3f},{:.3f} """
-  BezierLineToTemplate      = """L {:.3f},{:.3f} """
-  BezierCurveToTemplate     = """C {:.3f},{:.3f} {:.3f},{:.3f} {:.3f},{:.3f} """
-  Point2DTemplate           = """{:3.f},{:3.f}"""
+  BezierMoveToTemplate      = """M {:0.3f},{:0.3f} """
+  BezierLineToTemplate      = """L {:0.3f},{:0.3f} """
+  BezierCurveToTemplate     = """C {:0.3f},{:0.3f} {:0.3f},{:0.3f} {:0.3f},{:0.3f} """
+
+  DrawFillPolygonTemplate   = """<polygon style="fill:{};stroke:none;stroke-width:{:0.3f};{}" points="{:s}" />\n"""
+  DrawFillRectTemplate      = """<rect x="{:0.3f}" y="{:0.3f}" width="{:0.3f}" height="{:0.3f}" style="fill:{};stroke:none;stroke-width:{:0.3f};{}"/>\n"""
+  DrawArcFillTemplate       = """<path style="fill:{};stroke:none;" d="{:s}" />\n"""
+  DrawFillEllipseTemplate   = """<ellipse cx="{:0.3f}" cy="{:0.3f}" rx="{:0.3f}" ry="{:0.3f}" style="fill:{};stroke:{};stroke-width:{:0.3f};{}" />\n"""
+  Point2DTemplate           = """{:0.3f},{:0.3f}"""
                               # Red   Green Blue
   Color3SpaceTemplate       = "#{:02X}{:02X}{:02X}"
                               # Red  Green  Blue  Opacity, but actually unused. 
   Color4SpaceTemplate       = "#{:02X}{:02X}{:02X}{:02X}"
-  DrawFillBezierTemplate    = """\t<path  style="fill:{};stroke:none;stroke-width:{:.3f};" d="{:s}" />\n"""
-  DrawStringTemplate        = """\t<text x="{:.3f}" y="{:.3f}" text-anchor="{:s}" font-size="{:.2f}" style="fill:{};font-family:{:s};font-style:{:s};font-weight:{:d};" >{:s}</text>\n"""
-  DrawImageTemplate         = """\t<image x="{:.3f}" y="{:.3f}" width="{:.3f}" height="{:.3f}" xlink:href="{:s}"/>\n"""
+  DrawFillBezierTemplate    = """<path  style="fill:{};stroke:none;stroke-width:{:0.3f};" d="{:s}" />\n"""
+  DrawStringTemplate        = """<text x="{:0.3f}" y="{:0.3f}" text-anchor="{:s}" font-size="{:0.2f}" style="fill:{};font-family:{:s};font-style:{:s};font-weight:{:0.0f};" >{:s}</text>\n"""
+  DrawImageTemplate         = """<image x="{:0.3f}" y="{:0.3f}" width="{:0.3f}" height="{:0.3f}" xlink:href="{:s}"/>\n"""
   
   FontWeightT           = (400, 200, 300, 500, 600, 700, 800, 900)
   FontStyleT            = ('normal', 'italic', 'oblique')
@@ -410,6 +413,29 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   # reffered in FormatTemplate to be associated with property VariableFormat
   TemplateString = None 
 
+  ### 
+  ### This is the section of attribute and reference used 
+  ### by property FormatHandler.
+  ###
+  ### role inside FormatHandler
+  ###
+  ### set value to "append" with setAppend will:
+  ### - make ValueFormatHandler appending information to 
+  ### self.(AttrClassName) 
+  ### 
+  ### set value to "initialize" with setInitialize will:
+  ### - make ValueFormatHandler Initializing the content
+  ### of self.(AttrClassName) to parsed information.
+  ### 
+  ### 
+
+  ValueFactoryRef   = None 
+  FHPropertyValue   = None 
+  FormatHandlerList=[ "append","initialize" ]
+  setAppend         = FormatHandlerList[0]
+  setInitialize     = FormatHandlerList[1]
+
+
   """
   Utility of Statement
 
@@ -451,6 +477,12 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   PStatementAct       = None
   PStatementDictIndex = None
   PBuildStatement     = None
+
+  def WindowsInterface( self ):
+    app = wx.App(False)
+    frame = wx.Frame(None, wx.ID_ANY, "Options for SVG (style attribute)")
+    frame.Show(True)
+    app.MainLoop()
   
   def __init__ ( self ):
     super( SvgLxmlEngine, self ).__init__(  )
@@ -460,10 +492,17 @@ class SvgWebRenderer( SvgLxmlEngine ) :
     self.line_join        = 0
     self.line_style       = 0
     self.dash_length      = 0
+    self.Buffer           = StringIO()
     self.Text             = None 
     self.BezPointsList    = None 
-    self.Buffer           = StringIO()
-    self.ColorSpaceObject = None 
+    self.PointStringValue = None
+    self.ColorSpaceObject = None
+    self.FormatStrokeValue= None
+    self.LineSpaceStyle   = None
+    self.LineJoinValue    = None
+    self.LineCapsValue    = None
+    self.StrokeStyleValue = None
+    self.ShowOptionWindows= False
 
   def SetBuffer( self, value ):
     self.Buffer.write( value )
@@ -855,8 +894,9 @@ check-validity in case receving argument."""
     else:
       StrReturnFormat=self.StrokeType[StrDashType][StyleId].format( self.StrokeType[StrDashType]['name'] )
     del self.VariableFormat 
-    print "FormatStroke return: DashType{}, StyleId{}, result:[ {} ]".format( self.StrokeType[StrDashType]['name'], self.StrokeType[StrDashType][StyleId], StrReturnFormat )
-    return StrReturnFormat
+    self.FormatStrokeValue=StrReturnFormat
+    print "FormatStroke return: DashType{}, StyleId{}, result:[ {} ]".format( self.StrokeType[StrDashType]['name'], self.StrokeType[StrDashType][StyleId], self.FormatStrokeValue )
+    
 
   def FormatTemplate( self ):
     StrReturnFormat=str()
@@ -886,6 +926,70 @@ check-validity in case receving argument."""
   ### it will generate a self.ArcPoint accessible everywhere in the class. 
   ###
   ###
+
+
+  ###
+  ### Function for property ValueFactory.
+  ### Used inside ValueFormatHandler as property 
+  ### to store inside class a tuple of 2 value. 
+  ### usually the AttrClassName and the result
+  ### this one is taked back by a FormatHandler
+  ### handled inside function ValueFormatHandler
+  ### to either help overwriting value in the
+  ### class or appending value to current
+  ### class-attribute. 
+  def SetValueFactory( self, value ):
+    if len(value) == 2:
+      if type( value[0] ).__name__ != 'property' :
+        raise PropertyWarning, "ValueFactory First value should be a tuple inline list-based property\n\t:example:\n\tself.FormatHandler = self.BuildStatement,value2\n\tself.FormatHandler = self.VariableFormat,value2. Raised by Setter, {}".format( self.SetValueFactory.func_name )
+      else:
+        self.ValueFactoryRef = value
+    else:
+      raise PropertyWarning, "ValueFactory Does require inline-tuple use of this property\n\t:example: self.FormatHandler = value1,value2. And should not exceed 2 value.\n\tRaised by Setter, {}".format( self.SetValueFactory.func_name )
+
+  def GetValueFactory( self ):
+    return self.ValueFactoryRef
+
+  def ResetValueFactory( self ):
+    self.ValueFactory = None
+
+  ValueFactory=property( GetValueFactory, SetValueFactory, ResetValueFactory ) 
+  
+  ###
+  ### Function for property FormatHandler.
+  ### Used inside ValueFormatHandler as property
+  ### to write to a new variable or appending to 
+  ### existing one, information like Parsed 
+  ### information, from either BuildStatement or
+  ### VariableFormat.
+  ### ValueFormatHandler, consist to be an 
+  ### equivalent to TemplateToValueParser less
+  ### not writing to a Buffer and accept List-property
+  ### builder. 
+  ###
+  ###
+  
+  def SetFormatHandler( self, value ):
+      if value in self.FormatHandlerList:
+        self.FHPropertyValue=value
+      else:
+        raise PropertyWarning, "FormatHandler not configured before using ValueFormatHandler; Raised by Setter, {}".format( self.SetFormatHandler.func_name ) 
+    
+  def GetFormatHandler( self ):
+    attrName, StringParsed = self.ValueFactory
+    if self.FHPropertyValue == self.setInitialize:
+      setattr( self, attrName, StringParsed )
+    if self.FHPropertyValue == self.setAppend:
+      if hasattr( self, attrName ):
+        setattr( self, attrName, "{}{}".format( getattr( self, attrName ), StringParsed ) )
+      else:
+        raise PropertyWarning, "FormatHandler can not append to non existing class-attribute; Raised by Getter, {}".format( self.GetFormatHandler.func_name ) 
+
+  def ResetFormatHandler( self ):
+    self.FHPropertyValue=None 
+
+  FormatHandler=property( GetFormatHandler, SetFormatHandler, ResetFormatHandler)
+    
   def ValueFormatHandler( self, StrTemplate, AttrProperty, AttrClassName ):
     StrParse=str()
     try:
@@ -894,8 +998,11 @@ check-validity in case receving argument."""
       print "Exception raised,\n\tTemplate:{}\n\tvalue:{}\n".format( StrTemplate, str( getattr( self, AttrProperty ) ) )
     else:
       print "Sucessfully parsed Template:\n\t{}".format( StrTemplate.format( *getattr( self, AttrProperty ) ) )
+      self.ValueFactory = AttrClassName, StrParse
+      self.FormatHandler
       getattr( getattr( self.__class__, AttrProperty ), 'fdel')()
-      setattr( self, AttrClassName, StrParse ) 
+      getattr( self.ValueFactory, 'fdel')()
+      getattr( self.FormatHandler, 'fdel')()
 
   def TemplateToValueParser( self, StrTemplate ):
     try:
@@ -929,6 +1036,8 @@ check-validity in case receving argument."""
     self.FileHandler.close()
   
   def _open(self, filename) :
+    if self.ShowOptionWindows is True :
+      self.WindowsInterface( )
     self.FileHandler = open(filename, "w")
 
   def begin_render (self, data, filename) :
@@ -955,8 +1064,8 @@ check-validity in case receving argument."""
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def set_linewidth (self, width) :
-    if width < 0.001 : # zero line width is invisble ?
-      self.line_width = 0.001
+    if width < 0.05 : # zero line width is invisble ?
+      self.line_width = 0.05
     else :
       self.line_width = width
 
@@ -990,49 +1099,180 @@ check-validity in case receving argument."""
   def draw_line (self, start, end, color) :
     del self.BuildStatement
     self._colorSpace( color )
-    self.BuildStatement = start.x, start.y, end.x, end.y, self.ColorSpaceObject, self.line_width, self._stroke_style()
+    self._stroke_style()
+    self.set_linewidth( 0 )
+    self.BuildStatement = start.x, start.y, end.x, end.y, self.ColorSpaceObject, self.line_width, self.StrokeStyleValue 
     self.TemplateToValueParser( self.DrawLineTemplate )    
-    
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def _getPointString( self, points ):
-    StrPointList=str()
-    for pt in points :
-      StrPointList += self.Point2DTemplate.format(pt.x, pt.y)
-    return StrPointList
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_polyline (self, points, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
     self._colorSpace(color)
-    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), self._getPointString( points ) 
+    self._stroke_style()
+    self._setPointString( points ) 
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self.StrokeStyleValue, self.PointStringValue  
     self.TemplateToValueParser( self.DrawPolyLineTemplate )
     
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_polygon (self, points, color) :
     #del self.BuildStatement, see message inside TemplateToValueParser .
     self._colorSpace(color)
-    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), self._getPointString( points ) 
+    self._stroke_style()
+    self._setPointString( points )
+    self.set_linewidth( 0 )
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self.StrokeStyleValue, self.PointStringValue 
     self.TemplateToValueParser( self.DrawPolygonTemplate )
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def fill_polygon (self, points, color) :
-    #del self.BuildStatement , see message inside TemplateToValueParser .
-    self._colorSpace(color)
-    self.BuildStatement = self.ColorSpaceObject, self.line_width , self._getPointString( points ) 
-    self.TemplateToValueParser( self.DrawFillPolygonTemplate )
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def draw_rect (self, rect, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
     self._colorSpace(color)
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject, self.line_width, self._stroke_style()
+    self._stroke_style()
+    self.set_linewidth( 0 )
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject, self.line_width, self.StrokeStyleValue
     self.TemplateToValueParser( self.DrawRectangleTemplate )
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_arc (self, center, width, height, angle1, angle2, color) :
+    self._arc(center, width, height, angle1, angle2, color)
+
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_ellipse (self, center, width, height, color) :
+    #del self.BuildStatement, see message inside TemplateToValueParser .
+    #parameter cx, cy, rx, ry, stroke, stroke-width ; ?
+    self._colorSpace(color)
+    self._stroke_style()
+    self.set_linewidth( 0 )
+    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.ColorSpaceObject, self.line_width, self.StrokeStyleValue
+    self.TemplateToValueParser( self.DrawEllipseTemplate )
+      
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_bezier (self, bezpoints, color) :
+    #del self.BuildStatement, see message inside TemplateToValueParser .
+    ### Unless it don't hold all the elements even part of complex one,
+    ### it's useless to prepare a self.BuildStatement for color, line
+    ### because the loop of bezpoints will throw an TypeError after first
+    ### parsed elements and final template will hodl about nothing except
+    ### over-crowed informations.
+    self._colorSpace(color)
+    self._setBezPoint( bezpoints )
+    self._stroke_style()
+    self.set_linewidth( 0 )
+    self.BuildStatement = self.ColorSpaceObject, self.line_width, self.StrokeStyleValue, self.BezPointsList
+    self.TemplateToValueParser( self.DrawBezierTemplate )
+    ### No more need to close an element, all template were adjusted to hold second level of
+    ### parsing, making them complete instead of concatenating part
+    #self.WriteBuffer( self.TagElementClosure )
+
+  ### Inside binding/dia-render.cpp  / binding/dia-render.h which is
+  ### probably the main interface sending API-call, it offer another
+  ### draw_text, where belong to dia document :
+  ### 
+  ### An Object with :
+  ###    Properties( as dict() form ) hold
+  ###    and element Properties['property'] have an attribute text
+  ###    where it hold it's own sub-attribute:
+  ###     -color
+  ###     -font
+  ###     -height
+  ###     -position
+  ###     -text 
+  ### 
+  ### --> draw a Text.  It holds its own information like position, style, ...
+  ### void 
+  ###     dia::Renderer::draw_text (Text* text)
+  ### Belong to dia-documents pydiadoc.png available at 
+  ### https://wiki.gnome.org/Apps/Dia/Python?action=AttachFile&do=view&target=pydiadoc.png
+  ### 
+  ### text can hold 
+  ###   text.color
+  ###   text.font
+  ###   text.height
+  ###   text.position -> text.position.x
+  ###                    text.position.y
+  ###   and text.text
+  ###  
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_text (self, text) :
+    if len(text.text) > 0 :
+      talign = self.TextAlign [text.alignment]
+      fstyle = self.FontStyleT [text.font.style & 0x03]
+      fweight = self.FontWeightT [(text.font.style  >> 4)  & 0x7]
+      #del self.BuildStatement, see message inside TemplateToValueParser .
+      ### This BuildStatement hold 9 variables to parse within this Template.
+      #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
+      self._colorSpace(text.color)
+      self.TextSubst( text.text )
+      self.BuildStatement = text.position.x, text.position.y, talign ,text.font_size, self.ColorSpaceObject, text.font.family, fstyle,  fweight, self.Text
+      self.TemplateToValueParser( self.DrawStringTemplate )
+    else:
+      raise EmptyTextString( text.text ) 
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_string (self, text, pos, alignment, color) :
+    if len(text) > 0 :
+      talign = self.TextAlign [alignment]
+      fstyle = self.FontStyleT [self.font.style & 0x03]
+      fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
+      #del self.BuildStatement, see message inside TemplateToValueParser .
+      ### This BuildStatement hold 9 variables to parse within this Template.
+      #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
+      self._colorSpace(color)
+      self.TextSubst( text )
+      self.BuildStatement = pos.x, pos.y, talign ,self.font_size, self.ColorSpaceObject, self.font.family, fstyle,  fweight, self.Text
+      self.TemplateToValueParser( self.DrawStringTemplate )
+    else:
+      raise EmptyTextString( text ) 
+    
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def draw_image (self, point, width, height, image) :
+    #FIXME : do something better than absolute pathes ?
+    #del self.BuildStatement, see message inside TemplateToValueParser .
+    self.BuildStatement = point.x, point.y, width, height, image.uri 
+    self.TemplateToValueParser( self.DrawImageTemplate )
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def fill_arc (self, center, width, height, angle1, angle2, color) :
+    self._arc(center, width, height, angle1, angle2, color, 1)
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def fill_ellipse (self, center, width, height, color) :
+    #del self.BuildStatement , see message inside TemplateToValueParser .
+    #parameter: cx, cy, rx, ry, fill:color,
+    self._colorSpace( color )
+    RadiusH=height / 2
+    RadiusW=width / 2
+    self._stroke_style()
+    self.set_linewidth( 0 )
+    self.BuildStatement = center.x, center.y, RadiusW, RadiusH, self.ColorSpaceObject, "none", self.line_width , self.StrokeStyleValue
+    self.TemplateToValueParser( self.DrawFillEllipseTemplate )
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def fill_bezier (self, bezpoints, color) :
+    #del self.BuildStatement, see message inside TemplateToValueParser .
+    self._colorSpace(color)
+    self._setBezPoint( bezpoints  ) 
+    self.BuildStatement = self.ColorSpaceObject , self.line_width , self.BezPointsList
+    self.TemplateToValueParser( self.DrawFillBezierTemplate )
+    #self.WriteBuffer( self.TagElementClosure )
+
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def fill_polygon (self, points, color) :
+    #del self.BuildStatement , see message inside TemplateToValueParser .
+    self._colorSpace(color)
+    self._setPointString( points )
+    self._stroke_style()
+    self.BuildStatement = self.ColorSpaceObject, self.line_width , self.StrokeStyleValue , self.PointStringValue  
+    self.TemplateToValueParser( self.DrawFillPolygonTemplate )
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def fill_rect (self, rect, color) :
     #del self.BuildStatement , see message inside TemplateToValueParser .
     self._colorSpace(color)
-    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject
+    self.set_linewidth( 0 )
+    self._stroke_style()
+    self.BuildStatement = rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, self.ColorSpaceObject, self.line_width, self.StrokeStyleValue
     self.TemplateToValueParser( self.DrawFillRectTemplate )
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
@@ -1059,7 +1299,8 @@ check-validity in case receving argument."""
       ### BuildStatement
       del self.BuildStatement
       self._colorSpace(color)
-      self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style() , StrArcPoint
+      self._stroke_style()
+      self.BuildStatement = self.ColorSpaceObject, self.line_width, self.StrokeStyleValue , StrArcPoint
       self.TemplateToValueParser( self.DrawArcNofillTemplate )
     else :
       ### Since self.BuildStatement was used to parse self.DrawArcPointTemplate, which is
@@ -1072,58 +1313,6 @@ check-validity in case receving argument."""
       self.BuildStatement = self.ColorSpaceObject, StrArcPoint 
       self.TemplateToValueParser( self.DrawArcFillTemplate )
 
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def draw_arc (self, center, width, height, angle1, angle2, color) :
-    self._arc(center, width, height, angle1, angle2, color)
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def fill_arc (self, center, width, height, angle1, angle2, color) :
-    self._arc(center, width, height, angle1, angle2, color, 1)
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def draw_ellipse (self, center, width, height, color) :
-    #del self.BuildStatement, see message inside TemplateToValueParser .
-    #parameter cx, cy, rx, ry, stroke, stroke-width ; ?
-    self._colorSpace(color)
-    self.BuildStatement = center.x, center.y, width / 2, height / 2, self.line_width, self._stroke_style() , self.ColorSpaceObject
-    self.TemplateToValueParser( self.DrawEllipseTemplate )
-      
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def fill_ellipse (self, center, width, height, color) :
-    #del self.BuildStatement , see message inside TemplateToValueParser .
-    #parameter: cx, cy, rx, ry, fill:color,
-    self._colorSpace( color )
-    print "ColorSpace return: {}".format( self.ColorSpaceObject )
-    RadiusH=height / 2
-    RadiusW=width / 2
-    self.BuildStatement = center.x, center.y, RadiusW, RadiusH, self.ColorSpaceObject
-    self.TemplateToValueParser( self.DrawFillEllipseTemplate )
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def draw_bezier (self, bezpoints, color) :
-    #del self.BuildStatement, see message inside TemplateToValueParser .
-    ### Unless it don't hold all the elements even part of complex one,
-    ### it's useless to prepare a self.BuildStatement for color, line
-    ### because the loop of bezpoints will throw an TypeError after first
-    ### parsed elements and final template will hodl about nothing except
-    ### over-crowed informations.
-    self._colorSpace(color)
-    StrBezPoint=self._getBezPoint( bezpoints  ) 
-    self.BuildStatement = self.ColorSpaceObject, self.line_width, self._stroke_style(), StrBezPoint
-    self.TemplateToValueParser( self.DrawBezierTemplate )
-    ### No more need to close an element, all template were adjusted to hold second level of
-    ### parsing, making them complete instead of concatenating part
-    #self.WriteBuffer( self.TagElementClosure )
-
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def fill_bezier (self, bezpoints, color) :
-    #del self.BuildStatement, see message inside TemplateToValueParser .
-    self._colorSpace(color)
-    StrBezPoint=self._getBezPoint( bezpoints  ) 
-    self.BuildStatement = self.ColorSpaceObject , self.line_width , StrBezPoint
-    self.TemplateToValueParser( self.DrawFillBezierTemplate )
-    #self.WriteBuffer( self.TagElementClosure )
 
   # avoid writing XML special characters (ampersand must be first to not break the rest)
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
@@ -1134,33 +1323,16 @@ check-validity in case receving argument."""
     print "Text from String Vector:[{}]".format( StrVar )
     self.Text=StrVar 
 
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def draw_string (self, text, pos, alignment, color) :
-    if len(text) > 1 :
-      talign = self.TextAlign [alignment]
-      fstyle = self.FontStyleT [self.font.style & 0x03]
-      fweight = self.FontWeightT [(self.font.style  >> 4)  & 0x7]
-      #del self.BuildStatement, see message inside TemplateToValueParser .
-      ### This BuildStatement hold 9 variables to parse within this Template.
-      #parameter: x, y, text-anchor, font-size, fill:color, font-family, font-style, font-weight, text
-      self._colorSpace(color)
-      self.TextSubst( text )
-      self.BuildStatement = pos.x, pos.y, talign ,self.font_size, self.ColorSpaceObject, self.font.family, fstyle,  fweight, self.Text
-      self.TemplateToValueParser( self.DrawStringTemplate )
-    else:
-      raise EmptyTextString 
-    
-  @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def draw_image (self, point, width, height, image) :
-    #FIXME : do something better than absolute pathes ?
-    #del self.BuildStatement, see message inside TemplateToValueParser .
-    self.BuildStatement = point.x, point.y, width, height, image.uri 
-    self.TemplateToValueParser( self.DrawImageTemplate )
-
     # Helpers, not in the DiaRenderer interface
+  @SvgLxmlEngine.NameFunc( ListFunctionReference )
+  def _setPointString( self, points ):
+    StrPointList=str()
+    for pt in points :
+      StrPointList += self.Point2DTemplate.format(pt.x, pt.y)
+    self.PointStringValue=StrPointList
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
-  def _getBezPoint(self, bezpoints):
+  def _setBezPoint(self, bezpoints):
     StrBezier=str() 
     ### Since there is no information on bezpoints, they may have more than one
     ### entity and should worry about BuildStatement every-loop . 
@@ -1191,7 +1363,7 @@ check-validity in case receving argument."""
       ### should be empty, be cause This section fill information for the last
       ### elements, it will be inserted (StrBezier) at the end.
       del self.BuildStatement
-    
+    self.BezPointsList = StrBezier
     #return StrBezier 
 
   def _testColorSpaceName( self, color, StrName ):
@@ -1257,11 +1429,13 @@ check-validity in case receving argument."""
       self.VariableFormat = dotlen, dotlen
 
     if self.line_style != 0:
-      StrTypeLine=StrTypeLine.format( self.FormatStroke( 'dasharray', style ) )
+      self.FormatStroke( 'dasharray', self.line_style )
+      StrTypeLine=StrTypeLine.format( self.FormatStrokeValue )
 
     print "dasharray: {}".format( str( self.VariableFormat ) )
     #del self.VariableFormat
-    return StrTypeLine
+    self.LineSpaceStyle = StrTypeLine
+    #return StrTypeLine
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _line_join_style( self ):
@@ -1269,11 +1443,12 @@ check-validity in case receving argument."""
     if self.line_join == 0 : # MITER
       StrLineJoin=""
     else:
-      StrFormatStrk=self.FormatStroke( 'linejoin', self.line_join )
-      print "FormatStroke return: {}".format( StrFormatStrk )
-      StrLineJoin=StrLineJoin.format( StrFormatStrk )
+      self.FormatStroke( 'linejoin', self.line_join )
+      print "FormatStroke return: {}".format( self.FormatStrokeValue )
+      StrLineJoin=StrLineJoin.format( self.FormatStrokeValue )
     print "linejoin: {}".format( self.line_join )
-    return StrLineJoin 
+    self.LineJoinValue = StrLineJoin
+    
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _line_caps_style( self ):
@@ -1281,17 +1456,83 @@ check-validity in case receving argument."""
     if self.line_caps == 0 : # BUTT
       StrLineCaps=""
     else:
-      StrLineCaps=StrLineCaps.format( self.FormatStroke( 'linecap', self.line_caps ) )
+      self.FormatStroke( 'linecap', self.line_caps )
+      StrLineCaps=StrLineCaps.format( self.FormatStrokeValue  )
     print "line_caps: {}".format( self.line_caps )
-    return StrLineCaps
+    self.LineCapsValue=StrLineCaps
 
   @SvgLxmlEngine.NameFunc( ListFunctionReference )
   def _stroke_style(self) :
     #self._line_space_style() 
     StrStrokeStyle = "{}{}{}"
-    StrStrokeStyle=StrStrokeStyle.format( self._line_space_style() ,
-                                          self._line_join_style()  ,
-                                          self._line_caps_style()  )
+    self._line_space_style()
+    self._line_join_style()
+    self._line_caps_style()
+    self.StrokeStyleValue = StrStrokeStyle.format( self.LineSpaceStyle , self.LineJoinValue, self.LineCapsValue)
+
+  ### Other specialisation not implemented but present inside binding/dia-render.cpp , dia-render.h
+  ###
+  ### a polyline with round coners
+  ### void 
+  ###     dia::Renderer::draw_rounded_polyline (Point *points, 
+  ###      int num_points, Color *color, double radius )
+  ### 
+  ### --> specialized draw_rect() with round corners
+  ### 
+  ### void 
+  ###     dia::Renderer::draw_rounded_rect (Point *ul_corner, 
+  ###      Point *lr_corner, Color *color, real radius)
+  ### 
+  ### --> specialized draw_rect() with round corners
+  ### 
+  ### void 
+  ###     dia::Renderer::fill_rounded_rect (Point *ul_corner, 
+  ###      Point *lr_corner, Color *color, real radius ) 
+  ### 
+  ### --> specialized draw_line() for renderers with an own concept of Arrow
+  ### 
+  ### void 
+  ###     dia::Renderer::draw_line_with_arrows  (Point *start, 
+  ###      Point *end, real line_width, Color *line_color, 
+  ###      Arrow *start_arrow, Arrow *end_arrow)
+  ### 
+  ### --> specialized draw_line() for renderers with an own concept of Arrow
+  ### 
+  ### void 
+  ###     dia::Renderer::draw_arc_with_arrows (Point *start, 
+  ###      Point *end, Point *midpoint, real line_width, Color 
+  ###      *color, Arrow *start_arrow, Arrow *end_arrow)
+  ### 
+  ### --> specialized draw_polyline() for renderers with an own concept of Arrow
+  ### 
+  ### void 
+  ###     dia::Renderer::draw_polyline_with_arrows (Point *points,
+  ###      int num_points, real line_width, Color *color, Arrow 
+  ###      *start_arrow, Arrow *end_arrow)
+  ### 
+  ### --> specialized draw_rounded_polyline() for renderers with an 
+  ###   own concept of Arrow
+  ### void 
+  ###     dia::Renderer::draw_rounded_polyline_with_arrows (Point
+  ###      *points, int num_points, real line_width, Color *color, 
+  ###      Arrow *start_arrow, Arrow *end_arrow, real radius ) 
+  ### 
+  ### --> specialized draw_bezier() for renderers with an own
+  ###    concept of Arrow
+  ### void
+  ###     dia::Renderer::draw_bezier_with_arrows ( BezPoint *points, int
+  ###      num_points, real line_width, Color *color, Arrow *start_arrow,
+  ###      Arrow *end_arrow)
+  ### 
+  ### 
+  ### 
+  ### 
+  ### 
+  ### 
+  ### 
+  ### 
+  ### 
+
 
 class SvgCompression(SvgWebRenderer) :
 
@@ -1350,7 +1591,7 @@ try:
     print "dia application found: PID: {}".format( IntPidDia )
     try:
       import dia
-      dia.register_export ("SVG plain (uses of style attribute)", "svg", SvgWebRenderer())
+      dia.register_export ("SVG (uses of style attribute)", "svg", SvgWebRenderer())
       dia.register_export ("SVG Base64 (uses of style attribute)", "svg.base64", SvgBase64Codec())
       dia.register_export ("SVG compressed (uses of style attribute)", "svgz", SvgCompression())
     except ImportError:
