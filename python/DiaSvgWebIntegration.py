@@ -251,7 +251,7 @@ class SvgWebRenderer( SvgLxmlEngine ) :
   DrawFillRectTemplate      = """<rect x="{:0.3f}" y="{:0.3f}" width="{:0.3f}" height="{:0.3f}" style="fill:{};stroke:none;stroke-width:{:0.3f};{}"/>\n"""
   DrawArcFillTemplate       = """<path style="fill:{};stroke:none;" d="{:s}" />\n"""
   DrawFillEllipseTemplate   = """<ellipse cx="{:0.3f}" cy="{:0.3f}" rx="{:0.3f}" ry="{:0.3f}" style="fill:{};stroke:{};stroke-width:{:0.3f};{}" />\n"""
-  Point2DTemplate           = """{:0.3f},{:0.3f}"""
+  Point2DTemplate           = """{:0.3f},{:0.3f} """
                               # Red   Green Blue
   Color3SpaceTemplate       = "#{:02X}{:02X}{:02X}"
                               # Red  Green  Blue  Opacity, but actually unused. 
