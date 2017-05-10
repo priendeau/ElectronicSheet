@@ -15,211 +15,217 @@ import gettext
 
 
 class WindowsOpt(wx.Frame):
-	def __init__(self, *args, **kwds):
-		# begin wxGlade: WindowsOpt.__init__
-		wx.Frame.__init__(self, *args, **kwds)
-		self.StaticLineUpperWin = wx.StaticLine(self, wx.ID_ANY)
-		self.LabelOptWin = wx.StaticText(self, wx.ID_ANY, _("Option Windows for SVG filter export, DiaSvgWebIntegration."))
-		self.StaticLineLowerWin = wx.StaticLine(self, wx.ID_ANY)
-		self.CBIsIDUsed = wx.CheckBox(self, wx.ID_ANY, _("Use ID Interface for Shape exportation"))
-		self.CBAddAttr = wx.CheckBox(self, wx.ID_ANY, _("Allow Adding Attribute such data\n and transform."))
-		self.LabelTree = wx.StaticText(self, wx.ID_ANY, _("Tree Shape Section"), style=wx.ALIGN_CENTRE)
-		self.BtnTreeShape = wx.Button(self, wx.ID_ANY, _("&ID Interface"), style=wx.BU_TOP)
-		self.static_line_8 = wx.StaticLine(self, wx.ID_ANY)
-		self.static_line_6_copy = wx.StaticLine(self, wx.ID_ANY)
-		self.RBTypeID = wx.RadioBox(self, wx.ID_ANY, _("ID attribution for Unselected Shape"), choices=[_("Automatic attribution"), _("No Attribution")], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
-		self.labelIdName = wx.StaticText(self, wx.ID_ANY, _("default ID naming (use\nregular expression)"))
-		self.TxtUniqueID = wx.TextCtrl(self, wx.ID_ANY, _("id[0-9]*"))
-		self.LabecConfig = wx.StaticText(self, wx.ID_ANY, _("Configuration Section"))
-		self.CBDisableOptWin = wx.CheckBox(self, wx.ID_ANY, _("Avoid displaying this windows on export."))
-		self.CBSaveConf = wx.CheckBox(self, wx.ID_ANY, _("Save information for this Filter"))
-		self.radio_box_1 = wx.RadioBox(self, wx.ID_ANY, _("Rendering Option"), choices=[_("Use Standard rendering method"), _("Use Active Layer reflection")], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
-		self.BtnCancel = wx.Button(self, wx.ID_CANCEL, "")
-		self.BtnOK = wx.Button(self, wx.ID_OK, "")
-		self.BtnHelp = wx.Button(self, wx.ID_HELP, "")
+  def __init__(self, *args, **kwds):
+    # begin wxGlade: WindowsOpt.__init__
+    wx.Frame.__init__(self, *args, **kwds)
+    self.StaticLineUpperWin = wx.StaticLine(self, wx.ID_ANY)
+    self.LabelOptWin = wx.StaticText(self, wx.ID_ANY, _("Option Windows for SVG filter export, DiaSvgWebIntegration."))
+    self.StaticLineLowerWin = wx.StaticLine(self, wx.ID_ANY)
+    self.CBIsIDUsed = wx.CheckBox(self, wx.ID_ANY, _("Use ID Interface for Shape exportation"))
+    self.CBAddAttr = wx.CheckBox(self, wx.ID_ANY, _("Allow Adding Attribute such data\n and transform."))
+    self.LabelTree = wx.StaticText(self, wx.ID_ANY, _("Tree Shape Section"), style=wx.ALIGN_CENTRE)
+    self.BtnTreeShape = wx.Button(self, wx.ID_ANY, _("&ID Interface"), style=wx.BU_TOP)
+    self.static_line_8 = wx.StaticLine(self, wx.ID_ANY)
+    self.static_line_6_copy = wx.StaticLine(self, wx.ID_ANY)
+    self.RBTypeID = wx.RadioBox(self, wx.ID_ANY, _("ID attribution for Unselected Shape"), choices=[_("Automatic attribution"), _("No Attribution")], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+    self.labelIdName = wx.StaticText(self, wx.ID_ANY, _("default ID naming (use\nregular expression)"))
+    self.TxtUniqueID = wx.TextCtrl(self, wx.ID_ANY, _("id[0-9]*"))
+    self.LabecConfig = wx.StaticText(self, wx.ID_ANY, _("Configuration Section"))
+    self.CBDisableOptWin = wx.CheckBox(self, wx.ID_ANY, _("Avoid displaying this windows on export."))
+    self.CBSaveConf = wx.CheckBox(self, wx.ID_ANY, _("Save information for this Filter"))
+    self.radio_box_1 = wx.RadioBox(self, wx.ID_ANY, _("Rendering Option"), choices=[_("Use Standard rendering method"), _("Use Active Layer reflection")], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+    self.BtnCancel = wx.Button(self, wx.ID_CANCEL, "")
+    self.BtnOK = wx.Button(self, wx.ID_OK, "")
+    self.BtnHelp = wx.Button(self, wx.ID_HELP, "")
 
-		self.__set_properties()
-		self.__do_layout()
+    self.__set_properties()
+    self.__do_layout()
 
-		self.Bind(wx.EVT_CHECKBOX, self.EventIDUse, self.CBIsIDUsed)
-		self.Bind(wx.EVT_CHECKBOX, self.EventCBAddAttr, self.CBAddAttr)
-		self.Bind(wx.EVT_BUTTON, self.EventShapeWindows, self.BtnTreeShape)
-		self.Bind(wx.EVT_RADIOBOX, self.EventRBAutoShapeID, self.RBTypeID)
-		self.Bind(wx.EVT_TEXT_MAXLEN, self.EventTxtUniqueIDMax, self.TxtUniqueID)
-		self.Bind(wx.EVT_TEXT, self.EventTxtUniqueID, self.TxtUniqueID)
-		self.Bind(wx.EVT_CHECKBOX, self.EventCBShowOnExport, self.CBDisableOptWin)
-		self.Bind(wx.EVT_CHECKBOX, self.EventCBSaveInfo, self.CBSaveConf)
-		self.Bind(wx.EVT_RADIOBOX, self.EventRBRenderingOpt, self.radio_box_1)
-		self.Bind(wx.EVT_BUTTON, self.EventBtnCancel, self.BtnCancel)
-		self.Bind(wx.EVT_BUTTON, self.EventBtnOK, self.BtnOK)
-		self.Bind(wx.EVT_BUTTON, self.EventBtnHelp, self.BtnHelp)
-		# end wxGlade
+    self.Bind(wx.EVT_CHECKBOX, self.EventIDUse, self.CBIsIDUsed)
+    self.Bind(wx.EVT_CHECKBOX, self.EventCBAddAttr, self.CBAddAttr)
+    self.Bind(wx.EVT_BUTTON, self.EventShapeWindows, self.BtnTreeShape)
+    self.Bind(wx.EVT_RADIOBOX, self.EventRBAutoShapeID, self.RBTypeID)
+    self.Bind(wx.EVT_TEXT_MAXLEN, self.EventTxtUniqueIDMax, self.TxtUniqueID)
+    self.Bind(wx.EVT_TEXT, self.EventTxtUniqueID, self.TxtUniqueID)
+    self.Bind(wx.EVT_CHECKBOX, self.EventCBShowOnExport, self.CBDisableOptWin)
+    self.Bind(wx.EVT_CHECKBOX, self.EventCBSaveInfo, self.CBSaveConf)
+    self.Bind(wx.EVT_RADIOBOX, self.EventRBRenderingOpt, self.radio_box_1)
+    self.Bind(wx.EVT_BUTTON, self.EventBtnCancel, self.BtnCancel)
+    self.Bind(wx.EVT_BUTTON, self.EventBtnOK, self.BtnOK)
+    self.Bind(wx.EVT_BUTTON, self.EventBtnHelp, self.BtnHelp)
+    # end wxGlade
 
-	def __set_properties(self):
-		# begin wxGlade: WindowsOpt.__set_properties
-		self.SetTitle(_("Dia Svg Filter Web option"))
-		self.SetSize((475, 320))
-		self.SetToolTipString(_("This is the Option Windows to configure the DiaSvgWebIntegration SVG export Filter"))
-		self.LabelTree.Enable(False)
-		self.BtnTreeShape.SetToolTipString(_("ID Interface is a Tree of All shape where you can define yourself some shape having specific ID."))
-		self.BtnTreeShape.Enable(False)
-		self.RBTypeID.SetSelection(1)
-		self.labelIdName.Enable(False)
-		self.TxtUniqueID.Enable(False)
-		self.radio_box_1.SetToolTipString(_("Standard rendering may not provide ID attribution, transform attribute...\nActive Layer reflection is using dia.active_display().diagram.data.layers[0].objects and parsing all object indivually"))
-		self.radio_box_1.SetSelection(0)
-		# end wxGlade
+  def __set_properties(self):
+    # begin wxGlade: WindowsOpt.__set_properties
+    self.SetTitle(_("Dia Svg Filter Web option"))
+    self.SetSize((475, 320))
+    self.SetToolTipString(_("This is the Option Windows to configure the DiaSvgWebIntegration SVG export Filter"))
+    self.LabelTree.Enable(False)
+    self.BtnTreeShape.SetToolTipString(_("ID Interface is a Tree of All shape where you can define yourself some shape having specific ID."))
+    self.BtnTreeShape.Enable(False)
+    self.RBTypeID.SetSelection(1)
+    self.labelIdName.Enable(False)
+    self.TxtUniqueID.Enable(False)
+    self.radio_box_1.SetToolTipString(_("Standard rendering may not provide ID attribution, transform attribute...\nActive Layer reflection is using dia.active_display().diagram.data.layers[0].objects and parsing all object indivually"))
+    self.radio_box_1.SetSelection(0)
+    # end wxGlade
 
-	def __do_layout(self):
-		# begin wxGlade: WindowsOpt.__do_layout
-		hbox1 = wx.BoxSizer(wx.VERTICAL)
-		hbox1D1 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_17 = wx.BoxSizer(wx.VERTICAL)
-		sizer_9 = wx.BoxSizer(wx.HORIZONTAL)
-		hbox1C1 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_13_copy = wx.BoxSizer(wx.VERTICAL)
-		sizer_10_copy_1 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_10_copy_copy = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_13 = wx.BoxSizer(wx.VERTICAL)
-		sizer_10_copy_2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_10_copy = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_10_copy_3 = wx.BoxSizer(wx.HORIZONTAL)
-		vbox2B1 = wx.BoxSizer(wx.HORIZONTAL)
-		vbox2B1_copy = wx.BoxSizer(wx.HORIZONTAL)
-		hbox3B1_copy = wx.BoxSizer(wx.VERTICAL)
-		sizer_1 = wx.BoxSizer(wx.VERTICAL)
-		hbox3B1 = wx.BoxSizer(wx.VERTICAL)
-		vbox2C = wx.BoxSizer(wx.HORIZONTAL)
-		vbox2A1 = wx.BoxSizer(wx.HORIZONTAL)
-		gbox1A = wx.FlexGridSizer(3, 3, 2, 2)
-		sizer_18 = wx.BoxSizer(wx.VERTICAL)
-		hbox1.Add(self.StaticLineUpperWin, 0, wx.EXPAND, 0)
-		hbox1.Add(self.LabelOptWin, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		hbox1.Add((20, 15), 0, wx.EXPAND, 0)
-		hbox1.Add(self.StaticLineLowerWin, 0, wx.EXPAND, 0)
-		vbox2A1.Add((20, 20), 0, wx.EXPAND, 0)
-		sizer_18.Add(self.CBIsIDUsed, 0, 0, 0)
-		sizer_18.Add(self.CBAddAttr, 0, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		vbox2A1.Add(sizer_18, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		vbox2A1.Add((20, 40), 0, wx.EXPAND, 0)
-		gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
-		gbox1A.Add(self.LabelTree, 0, wx.ALL | wx.EXPAND | wx.ALIGN_BOTTOM, 0)
-		gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
-		gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
-		gbox1A.Add(self.BtnTreeShape, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.SHAPED, 0)
-		gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
-		gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
-		vbox2A1.Add(gbox1A, 1, wx.EXPAND | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		hbox1.Add(vbox2A1, 1, wx.EXPAND, 0)
-		hbox1.Add(self.static_line_8, 0, wx.EXPAND, 0)
-		vbox2B1.Add((20, 5), 0, wx.EXPAND, 2)
-		hbox3B1.Add((10, 10), 0, wx.EXPAND, 0)
-		hbox3B1.Add(self.static_line_6_copy, 0, wx.EXPAND, 0)
-		vbox2C.Add((30, 10), 0, wx.EXPAND, 0)
-		hbox3B1.Add(vbox2C, 1, wx.EXPAND, 0)
-		hbox3B1.Add(self.RBTypeID, 0, wx.ALL | wx.EXPAND, 0)
-		vbox2B1.Add(hbox3B1, 1, wx.EXPAND, 0)
-		hbox3B1_copy.Add((5, 10), 0, wx.EXPAND, 0)
-		sizer_1.Add(self.labelIdName, 0, 0, 0)
-		sizer_1.Add((20, 5), 0, wx.EXPAND, 0)
-		sizer_1.Add(self.TxtUniqueID, 0, 0, 0)
-		hbox3B1_copy.Add(sizer_1, 1, wx.EXPAND, 0)
-		vbox2B1_copy.Add(hbox3B1_copy, 1, wx.EXPAND, 0)
-		vbox2B1.Add(vbox2B1_copy, 1, wx.EXPAND, 0)
-		hbox1.Add(vbox2B1, 1, wx.EXPAND, 0)
-		hbox1.Add((20, 20), 0, wx.EXPAND, 0)
-		sizer_10_copy_3.Add((15, 20), 0, wx.EXPAND, 0)
-		sizer_10_copy_3.Add(self.LabecConfig, 0, 0, 0)
-		sizer_13.Add(sizer_10_copy_3, 1, wx.EXPAND, 0)
-		sizer_10_copy.Add((15, 15), 0, wx.EXPAND, 0)
-		sizer_10_copy.Add(self.CBDisableOptWin, 0, 0, 0)
-		sizer_13.Add(sizer_10_copy, 1, wx.EXPAND, 0)
-		sizer_10_copy_2.Add((15, 15), 0, wx.EXPAND, 0)
-		sizer_10_copy_2.Add(self.CBSaveConf, 0, wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		sizer_13.Add(sizer_10_copy_2, 1, wx.EXPAND, 0)
-		sizer_13.Add((20, 20), 0, wx.EXPAND, 0)
-		hbox1C1.Add(sizer_13, 1, 0, 0)
-		sizer_10_copy_copy.Add((30, 25), 0, wx.EXPAND, 0)
-		sizer_10_copy_copy.Add(self.radio_box_1, 0, 0, 0)
-		sizer_13_copy.Add(sizer_10_copy_copy, 1, wx.EXPAND, 0)
-		sizer_10_copy_1.Add((30, 25), 0, wx.EXPAND, 0)
-		sizer_13_copy.Add(sizer_10_copy_1, 1, wx.EXPAND, 0)
-		hbox1C1.Add(sizer_13_copy, 1, wx.EXPAND, 0)
-		hbox1.Add(hbox1C1, 1, wx.EXPAND, 0)
-		hbox1.Add((20, 8), 0, wx.EXPAND, 0)
-		hbox1D1.Add((160, 12), 0, wx.EXPAND, 5)
-		sizer_17.Add((100, 15), 0, wx.EXPAND | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		sizer_9.Add(self.BtnCancel, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		sizer_9.Add(self.BtnOK, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		sizer_9.Add(self.BtnHelp, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-		sizer_17.Add(sizer_9, 1, wx.ALL | wx.ALIGN_RIGHT, 0)
-		hbox1D1.Add(sizer_17, 1, wx.EXPAND, 0)
-		hbox1.Add(hbox1D1, 1, wx.EXPAND | wx.ALIGN_RIGHT, 0)
-		self.SetSizer(hbox1)
-		self.Layout()
-		# end wxGlade
+  def __do_layout(self):
+    # begin wxGlade: WindowsOpt.__do_layout
+    hbox1 = wx.BoxSizer(wx.VERTICAL)
+    hbox1D1 = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_17 = wx.BoxSizer(wx.VERTICAL)
+    sizer_9 = wx.BoxSizer(wx.HORIZONTAL)
+    hbox1C1 = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_13_copy = wx.BoxSizer(wx.VERTICAL)
+    sizer_10_copy_1 = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_10_copy_copy = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_13 = wx.BoxSizer(wx.VERTICAL)
+    sizer_10_copy_2 = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_10_copy = wx.BoxSizer(wx.HORIZONTAL)
+    sizer_10_copy_3 = wx.BoxSizer(wx.HORIZONTAL)
+    vbox2B1 = wx.BoxSizer(wx.HORIZONTAL)
+    vbox2B1_copy = wx.BoxSizer(wx.HORIZONTAL)
+    hbox3B1_copy = wx.BoxSizer(wx.VERTICAL)
+    sizer_1 = wx.BoxSizer(wx.VERTICAL)
+    hbox3B1 = wx.BoxSizer(wx.VERTICAL)
+    vbox2C = wx.BoxSizer(wx.HORIZONTAL)
+    vbox2A1 = wx.BoxSizer(wx.HORIZONTAL)
+    gbox1A = wx.FlexGridSizer(3, 3, 2, 2)
+    sizer_18 = wx.BoxSizer(wx.VERTICAL)
+    hbox1.Add(self.StaticLineUpperWin, 0, wx.EXPAND, 0)
+    hbox1.Add(self.LabelOptWin, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    hbox1.Add((20, 15), 0, wx.EXPAND, 0)
+    hbox1.Add(self.StaticLineLowerWin, 0, wx.EXPAND, 0)
+    vbox2A1.Add((20, 20), 0, wx.EXPAND, 0)
+    sizer_18.Add(self.CBIsIDUsed, 0, 0, 0)
+    sizer_18.Add(self.CBAddAttr, 0, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    vbox2A1.Add(sizer_18, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    vbox2A1.Add((20, 40), 0, wx.EXPAND, 0)
+    gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
+    gbox1A.Add(self.LabelTree, 0, wx.ALL | wx.EXPAND | wx.ALIGN_BOTTOM, 0)
+    gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
+    gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
+    gbox1A.Add(self.BtnTreeShape, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.SHAPED, 0)
+    gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
+    gbox1A.Add((15, 10), 0, wx.EXPAND, 0)
+    vbox2A1.Add(gbox1A, 1, wx.EXPAND | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    hbox1.Add(vbox2A1, 1, wx.EXPAND, 0)
+    hbox1.Add(self.static_line_8, 0, wx.EXPAND, 0)
+    vbox2B1.Add((20, 5), 0, wx.EXPAND, 2)
+    hbox3B1.Add((10, 10), 0, wx.EXPAND, 0)
+    hbox3B1.Add(self.static_line_6_copy, 0, wx.EXPAND, 0)
+    vbox2C.Add((30, 10), 0, wx.EXPAND, 0)
+    hbox3B1.Add(vbox2C, 1, wx.EXPAND, 0)
+    hbox3B1.Add(self.RBTypeID, 0, wx.ALL | wx.EXPAND, 0)
+    vbox2B1.Add(hbox3B1, 1, wx.EXPAND, 0)
+    hbox3B1_copy.Add((5, 10), 0, wx.EXPAND, 0)
+    sizer_1.Add(self.labelIdName, 0, 0, 0)
+    sizer_1.Add((20, 5), 0, wx.EXPAND, 0)
+    sizer_1.Add(self.TxtUniqueID, 0, 0, 0)
+    hbox3B1_copy.Add(sizer_1, 1, wx.EXPAND, 0)
+    vbox2B1_copy.Add(hbox3B1_copy, 1, wx.EXPAND, 0)
+    vbox2B1.Add(vbox2B1_copy, 1, wx.EXPAND, 0)
+    hbox1.Add(vbox2B1, 1, wx.EXPAND, 0)
+    hbox1.Add((20, 20), 0, wx.EXPAND, 0)
+    sizer_10_copy_3.Add((15, 20), 0, wx.EXPAND, 0)
+    sizer_10_copy_3.Add(self.LabecConfig, 0, 0, 0)
+    sizer_13.Add(sizer_10_copy_3, 1, wx.EXPAND, 0)
+    sizer_10_copy.Add((15, 15), 0, wx.EXPAND, 0)
+    sizer_10_copy.Add(self.CBDisableOptWin, 0, 0, 0)
+    sizer_13.Add(sizer_10_copy, 1, wx.EXPAND, 0)
+    sizer_10_copy_2.Add((15, 15), 0, wx.EXPAND, 0)
+    sizer_10_copy_2.Add(self.CBSaveConf, 0, wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    sizer_13.Add(sizer_10_copy_2, 1, wx.EXPAND, 0)
+    sizer_13.Add((20, 20), 0, wx.EXPAND, 0)
+    hbox1C1.Add(sizer_13, 1, 0, 0)
+    sizer_10_copy_copy.Add((30, 25), 0, wx.EXPAND, 0)
+    sizer_10_copy_copy.Add(self.radio_box_1, 0, 0, 0)
+    sizer_13_copy.Add(sizer_10_copy_copy, 1, wx.EXPAND, 0)
+    sizer_10_copy_1.Add((30, 25), 0, wx.EXPAND, 0)
+    sizer_13_copy.Add(sizer_10_copy_1, 1, wx.EXPAND, 0)
+    hbox1C1.Add(sizer_13_copy, 1, wx.EXPAND, 0)
+    hbox1.Add(hbox1C1, 1, wx.EXPAND, 0)
+    hbox1.Add((20, 8), 0, wx.EXPAND, 0)
+    hbox1D1.Add((160, 12), 0, wx.EXPAND, 5)
+    sizer_17.Add((100, 15), 0, wx.EXPAND | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    sizer_9.Add(self.BtnCancel, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    sizer_9.Add(self.BtnOK, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    sizer_9.Add(self.BtnHelp, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+    sizer_17.Add(sizer_9, 1, wx.ALL | wx.ALIGN_RIGHT, 0)
+    hbox1D1.Add(sizer_17, 1, wx.EXPAND, 0)
+    hbox1.Add(hbox1D1, 1, wx.EXPAND | wx.ALIGN_RIGHT, 0)
+    self.SetSizer(hbox1)
+    self.Layout()
+    # end wxGlade
 
-	def EventIDUse(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventIDUse' not implemented!"
-		event.Skip()
+  def EventIDUse(self, event):  # wxGlade: WindowsOpt.<event_handler>
+    obj = event.GetEventObject()
+    if obj.IsChecked():
+      self.LabelTree.Enable(True)
+      self.BtnTreeShape.Enable(True)
+    else:
+      self.LabelTree.Enable(False)
+      self.BtnTreeShape.Enable(False)
+    event.Skip()
 
-	def EventCBAddAttr(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventCBAddAttr' not implemented!"
-		event.Skip()
+  def EventCBAddAttr(self, event):  # wxGlade: WindowsOpt.<event_handler>
+    print "Event handler 'EventCBAddAttr' not implemented!"
+    event.Skip()
 
-	def EventShapeWindows(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventShapeWindows' not implemented!"
-		event.Skip()
+  def EventShapeWindows(self, event):  # wxGlade: WindowsOpt.<event_handler>
+    print "Event handler 'EventShapeWindows' not implemented!"
+    event.Skip()
 
-	def EventRBAutoShapeID(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventRBAutoShapeID' not implemented!"
-		event.Skip()
+  def EventRBAutoShapeID(self, event):  # wxGlade: WindowsOpt.<event_handler>
+    print "Event handler 'EventRBAutoShapeID' not implemented!"
+    event.Skip()
 
-	def EventTxtUniqueIDMax(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventTxtUniqueIDMax' not implemented!"
-		event.Skip()
+  def EventTxtUniqueIDMax(self, event):  # wxGlade: WindowsOpt.<event_handler>
+    print "Event handler 'EventTxtUniqueIDMax' not implemented!"
+    event.Skip()
 
-	def EventTxtUniqueID(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventTxtUniqueID' not implemented!"
-		event.Skip()
+  def EventTxtUniqueID(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventTxtUniqueID' not implemented!"
+      event.Skip()
 
-	def EventCBShowOnExport(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventCBShowOnExport' not implemented!"
-		event.Skip()
+  def EventCBShowOnExport(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventCBShowOnExport' not implemented!"
+      event.Skip()
 
-	def EventCBSaveInfo(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventCBSaveInfo' not implemented!"
-		event.Skip()
+  def EventCBSaveInfo(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventCBSaveInfo' not implemented!"
+      event.Skip()
 
-	def EventRBRenderingOpt(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventRBRenderingOpt' not implemented!"
-		event.Skip()
+  def EventRBRenderingOpt(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventRBRenderingOpt' not implemented!"
+      event.Skip()
 
-	def EventBtnCancel(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventBtnCancel' not implemented!"
-		event.Skip()
+  def EventBtnCancel(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      self.Close()
+      
 
-	def EventBtnOK(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventBtnOK' not implemented!"
-		event.Skip()
+  def EventBtnOK(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventBtnOK' not implemented!"
+      event.Skip()
 
-	def EventBtnHelp(self, event):  # wxGlade: WindowsOpt.<event_handler>
-		print "Event handler 'EventBtnHelp' not implemented!"
-		event.Skip()
+  def EventBtnHelp(self, event):  # wxGlade: WindowsOpt.<event_handler>
+      print "Event handler 'EventBtnHelp' not implemented!"
+      event.Skip()
 
 # end of class WindowsOpt
 class SWIAppOpt(wx.App):
-	def OnInit(self):
-		wx.InitAllImageHandlers()
-		FrameOpt = WindowsOpt(None, wx.ID_ANY, "")
-		self.SetTopWindow(FrameOpt)
-		FrameOpt.Show()
-		return 1
+  def OnInit(self):
+    wx.InitAllImageHandlers()
+    FrameOpt = WindowsOpt(None, wx.ID_ANY, "")
+    self.SetTopWindow(FrameOpt)
+    FrameOpt.Show()
+    return 1
 
 # end of class SWIAppOpt
 
 if __name__ == "__main__":
-	gettext.install("AppOpt") # replace with the appropriate catalog name
+  gettext.install("AppOpt") # replace with the appropriate catalog name
 
-	AppOpt = SWIAppOpt(0)
-	AppOpt.MainLoop()
+  AppOpt = SWIAppOpt(0)
+  AppOpt.MainLoop()
