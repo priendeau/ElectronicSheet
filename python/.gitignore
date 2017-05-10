@@ -10,3 +10,5 @@
 .mp3
 .mv
 *.*~
+*.autosave
+*.save

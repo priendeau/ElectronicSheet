@@ -11,3 +11,5 @@
 .mv
 MANIFEST.in
 .save
+*.save
+*.autosave
