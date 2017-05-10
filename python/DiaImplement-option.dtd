@@ -1,0 +1,50 @@
+<!ELEMENT application (object)>
+<!ATTLIST application
+          class CDATA #REQUIRED
+          encoding CDATA #REQUIRED
+          for_version CDATA #REQUIRED
+          header_extension CDATA #REQUIRED
+          indent_amount CDATA #REQUIRED
+          indent_symbol CDATA #REQUIRED
+          is_template CDATA #REQUIRED
+          language CDATA #REQUIRED
+          name CDATA #REQUIRED
+          option CDATA #REQUIRED
+          overwrite CDATA #REQUIRED
+          path CDATA #REQUIRED
+          source_extension CDATA #REQUIRED
+          top_window CDATA #REQUIRED
+          use_gettext CDATA #REQUIRED
+          use_new_namespace CDATA #REQUIRED>
+<!ELEMENT object (flag?, border?, option?, title?, style?, selection?, dimension?, attribute?, stockitem?, label?, tooltip?, size?, disabled?, value?, choices?, events?, orient?, hgap?, rows?, cols?, vgap?, object*, height?, width?)>
+<!ATTLIST object
+          base CDATA #IMPLIED
+          class CDATA #REQUIRED
+          name CDATA #IMPLIED>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT tooltip (#PCDATA)>
+<!ELEMENT size (#PCDATA)>
+<!ELEMENT orient (#PCDATA)>
+<!ELEMENT flag (#PCDATA)>
+<!ELEMENT border (#PCDATA)>
+<!ELEMENT option (#PCDATA)>
+<!ELEMENT style (#PCDATA)>
+<!ELEMENT attribute (#PCDATA)>
+<!ELEMENT label (#PCDATA)>
+<!ELEMENT height (#PCDATA)>
+<!ELEMENT width (#PCDATA)>
+<!ELEMENT events (handler+)>
+<!ELEMENT handler (#PCDATA)>
+<!ATTLIST handler
+          event CDATA #REQUIRED>
+<!ELEMENT hgap (#PCDATA)>
+<!ELEMENT rows (#PCDATA)>
+<!ELEMENT cols (#PCDATA)>
+<!ELEMENT vgap (#PCDATA)>
+<!ELEMENT disabled (#PCDATA)>
+<!ELEMENT selection (#PCDATA)>
+<!ELEMENT dimension (#PCDATA)>
+<!ELEMENT choices (choice+)>
+<!ELEMENT choice (#PCDATA)>
+<!ELEMENT value (#PCDATA)>
+<!ELEMENT stockitem (#PCDATA)>

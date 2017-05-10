@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xs:schema SYSTEM "/home/maxiste/github/ElectronicSheet/python/DiaImplement-option.dtd">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="application">
+    <xs:complexType>
+      <xs:element ref="object"></xs:element>
+      <xs:attribute name="class" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="encoding" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="for_version" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="header_extension" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="indent_amount" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="indent_symbol" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="is_template" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="language" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="option" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="overwrite" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="path" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="source_extension" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="top_window" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="use_gettext" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="use_new_namespace" type="xs:string" use="required"></xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="object">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="flag"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="border"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="option"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="title"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="style"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="selection"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="dimension"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="attribute"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="stockitem"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="label"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="tooltip"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="size"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="disabled"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="value"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="choices"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="events"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="orient"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="hgap"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="rows"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="cols"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="vgap"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="object"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="height"></xs:element>
+        </xs:sequence>
+        <xs:sequence minOccurs="0">
+          <xs:element ref="width"></xs:element>
+        </xs:sequence>
+      </xs:sequence>
+      <xs:attribute name="base" type="xs:string"></xs:attribute>
+      <xs:attribute name="class" type="xs:string" use="required"></xs:attribute>
+      <xs:attribute name="name" type="xs:string"></xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="flag" type="xs:string"></xs:element>
+
+  <xs:element name="border" type="xs:string"></xs:element>
+
+  <xs:element name="option" type="xs:string"></xs:element>
+
+  <xs:element name="title" type="xs:string"></xs:element>
+
+  <xs:element name="style" type="xs:string"></xs:element>
+
+  <xs:element name="selection" type="xs:string"></xs:element>
+
+  <xs:element name="dimension" type="xs:string"></xs:element>
+
+  <xs:element name="attribute" type="xs:string"></xs:element>
+
+  <xs:element name="stockitem" type="xs:string"></xs:element>
+
+  <xs:element name="label" type="xs:string"></xs:element>
+
+  <xs:element name="tooltip" type="xs:string"></xs:element>
+
+  <xs:element name="size" type="xs:string"></xs:element>
+
+  <xs:element name="disabled" type="xs:string"></xs:element>
+
+  <xs:element name="value" type="xs:string"></xs:element>
+
+  <xs:element name="choices">
+    <xs:complexType>
+      <xs:sequence maxOccurs="unbounded">
+        <xs:element ref="choice"></xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="events">
+    <xs:complexType>
+      <xs:sequence maxOccurs="unbounded">
+        <xs:element ref="handler"></xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="orient" type="xs:string"></xs:element>
+
+  <xs:element name="hgap" type="xs:string"></xs:element>
+
+  <xs:element name="rows" type="xs:string"></xs:element>
+
+  <xs:element name="cols" type="xs:string"></xs:element>
+
+  <xs:element name="vgap" type="xs:string"></xs:element>
+
+  <xs:element name="height" type="xs:string"></xs:element>
+
+  <xs:element name="width" type="xs:string"></xs:element>
+
+  <xs:element name="handler">
+    <xs:complexType>
+      <xs:attribute name="event" type="xs:string" use="required"></xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="choice" type="xs:string"></xs:element>
+
+</xs:schema>
