@@ -170,48 +170,58 @@ class WindowsOpt(wx.Frame):
     event.Skip()
 
   def EventCBAddAttr(self, event):  # wxGlade: WindowsOpt.<event_handler>
-    print "Event handler 'EventCBAddAttr' not implemented!"
+    print "sub-element found:{}".format( dir( event ) )
     event.Skip()
 
   def EventShapeWindows(self, event):  # wxGlade: WindowsOpt.<event_handler>
-    print "Event handler 'EventShapeWindows' not implemented!"
+    print "sub-element found:{}".format( dir( event ) )
     event.Skip()
 
   def EventRBAutoShapeID(self, event):  # wxGlade: WindowsOpt.<event_handler>
-    print "Event handler 'EventRBAutoShapeID' not implemented!"
+    ObjSel = event.Selection
+    print "Selection: {}".format( event.Selection )
+    if ObjSel == 0:
+      self.labelIdName.Enable(True)
+      self.TxtUniqueID.Enable(True)
+    if ObjSel == 1:
+      self.labelIdName.Enable(False)
+      self.TxtUniqueID.Enable(False)
+    
+
     event.Skip()
 
   def EventTxtUniqueIDMax(self, event):  # wxGlade: WindowsOpt.<event_handler>
-    print "Event handler 'EventTxtUniqueIDMax' not implemented!"
+    print "sub-element found:{}".format( dir( event ) )
     event.Skip()
 
   def EventTxtUniqueID(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventTxtUniqueID' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    print "Text in the input Field:[{}]".format( getattr(event, 'GetString')()  )
+    event.Skip()
 
   def EventCBShowOnExport(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventCBShowOnExport' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    event.Skip()
 
   def EventCBSaveInfo(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventCBSaveInfo' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    event.Skip()
 
   def EventRBRenderingOpt(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventRBRenderingOpt' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    event.Skip()
 
   def EventBtnCancel(self, event):  # wxGlade: WindowsOpt.<event_handler>
       self.Close()
       
 
   def EventBtnOK(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventBtnOK' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    event.Skip()
 
   def EventBtnHelp(self, event):  # wxGlade: WindowsOpt.<event_handler>
-      print "Event handler 'EventBtnHelp' not implemented!"
-      event.Skip()
+    print "sub-element found:{}".format( dir( event ) )
+    event.Skip()
 
 # end of class WindowsOpt
 class SWIAppOpt(wx.App):

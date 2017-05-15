@@ -9,9 +9,11 @@ from io import BytesIO
 
 from StringIO import StringIO
 
+import lxml
 from lxml import etree
 
-
+import tempfile
+from tempfile import TemporaryFile
 
 class XmlGladeProperty( object ):
   """This class is a Property-class to help WxGladeReader to work.
@@ -31,8 +33,10 @@ class XmlGladeProperty( object ):
   creation and should generate almost same elements as python class file.
   """
 
-  ListKeyName = [ 'eventlist', 'xmldataobj', 'filename', 'obj', 'objaction' ]
+  ListKeyName = [ 'eventlist', 'xmldataobj', 'filename', 'obj', 'objaction', 'bufferdata', 'typename', 'attrname' ]
   ListPropertyValue = [ 'Rewind' ]
+  ListTypeBuffer = [ 'StringIO', 'BytesIO', 'TemporaryFile' ]
+  ### 'StringIO', 'BytesIO', 'TemporaryFile' 
   
   ### 
   ### Key to hold component of property 
@@ -54,11 +58,15 @@ class XmlGladeProperty( object ):
                 'xmldataobj':None,
                 'filename':None,
                 'obj':None,
-                'objaction':None }
+                'objaction':None,
+                'bufferdata':None}
 
   XmlPropertyConf={ 'Events':[ 'GetEvents', 'SetEvents', 'ResetEvents'],
-                    'DataIO':[ 'GetDataIO', 'SetDataIO', 'ResetDataIO']}
+                    'BufferData':['GetBufferData','SetBufferData','ResetBufferData'], 
+                    'DataIO':[ 'GetDataIO', 'SetDataIO', 'ResetDataIO']
+                    }
 
+  UseAttributeCreationFilter = False
   XmlDict=dict( )
 
   #XmlDict[eventlist] = list()
@@ -93,7 +101,13 @@ class XmlGladeProperty( object ):
     for item in ListAttr:
       print "Creating {}: {}".format( defaultSuffix,item )
       setattr( self, item, item )
-      #self.__class__.__setattr__( getattr( self, item ), item ) 
+      #self.__class__.__setattr__( getattr( self, item ), item )
+
+  ### Identical to StaticAttributeCreation be rely on filter action
+  ### only, no for no extra-debug... 
+  def StaticAttributeCreationFilter( self, ListAttr ):
+    filter( lambda item: setattr( self, item, item ), ListAttr )
+
 
   """PropertyGenerator require XmlPropertyConf to work and property PreProperty
   which is a property to create a list of function name and will by retreived
@@ -145,36 +159,111 @@ class XmlGladeProperty( object ):
 
   #Events=property( GetEvents,SetEvents ,ResetEvents )
 
+  def SetBufferData( self, value  ):
+    if self.typename not in self.XmlDict[self.bufferdata].keys():
+      if value in self.ListTypeBuffer:
+        self.XmlDict[self.bufferdata]={self.typename:value}
+        if self.attrname not in self.XmlDict[self.bufferdata].keys():
+          self.XmlDict[self.bufferdata][self.attrname]=list()
+      else:
+        self.XmlDict[self.bufferdata]={self.typename:None}
+    if self.XmlDict[self.bufferdata][self.typename] == None:
+      if value in self.ListTypeBuffer:
+        self.XmlDict[self.bufferdata]={self.typename:value}
+        if self.attrname not in self.XmlDict[self.bufferdata].keys():
+          self.XmlDict[self.bufferdata][self.attrname]=list()
+    if self.XmlDict[self.bufferdata][self.typename] != None:
+      if type( value ).__name__ == type(list()).__name__:
+        self.XmlDict[self.bufferdata][self.attrname].extend( value )
+      else:
+        self.XmlDict[self.bufferdata][self.attrname].append( value )
+
+  def GetBufferData( self ):
+    StrTypeName=self.XmlDict[self.bufferdata][self.typename]
+    print "Underlying information for DataIO will be use under type: {}".format( StrTypeName )
+    ### First, allow linking the Type to self to make able to
+    ### create variable from this class.
+    setattr( self, StrTypeName , eval(StrTypeName) )
+    if len( self.XmlDict[self.bufferdata][self.attrname] ) > 0:
+      TypeReturn=getattr( self, StrTypeName)( *self.XmlDict[self.bufferdata][self.attrname] )
+    else:
+      TypeReturn=getattr( self, StrTypeName)( ) 
+    return TypeReturn
+
+  def ResetBufferData( self ):
+    ### Removing Class-based type enforced from Setter
+    delattr( self, self.XmlDict[self.bufferdata][self.typename] )
+    self.XmlDict[self.bufferdata].clear()  
+
   def SetDataIO( self, value ):
     FileRead=open( value , 'r' )
+    ### BytesIO( FileRead.read() ) 
     self.XmlDict[self.xmldataobj]={ self.filename:value,
-                                    self.obj:BytesIO( FileRead.read() ) }
+                                    self.obj:self.BufferData }
+    self.XmlDict[self.xmldataobj][self.obj].write( FileRead.read() )
+    FileRead.close() 
+    
   def GetDataIO( self ):
     return self.XmlDict[self.xmldataobj][self.obj]
     
   def ResetDataIO( self ):
     self.XmlDict[self.xmldataobj][self.obj].close()
-    self.XmlDict[self.xmldataobj]=None 
+    self.XmlDict[self.xmldataobj].clear()
 
 class WxGladeReader( XmlGladeProperty ):
 
+  
+
   def __init__( self, filename ):
     super( XmlGladeProperty, self ).__init__(  )
-    self.StaticAttributeCreation( self.ListKeyName )
-    self.StaticAttributeCreation( self.ListPropertyValue, defaultSuffix='Property Value' )
+    if self.UseAttributeCreationFilter is True:
+      self.StaticAttributeCreationFilter( self.ListKeyName )
+      self.StaticAttributeCreationFilter( self.ListPropertyValue )
+    else:
+      self.StaticAttributeCreation( self.ListKeyName )
+      self.StaticAttributeCreation( self.ListPropertyValue, defaultSuffix='Property Value' )
     self.PropertyTypeConf( self.XmlDictType, self.XmlDict )
     self.PropertyGenerator( self.XmlPropertyConf )
 
+
+    ### Starting from generated Property BufferData,
+    ### superseding the DataIO, it configure DataIO to
+    ### use BytesIO, StringIO, TemporaryFile as memory
+    ### entry:
+    ### First use of Property self.BufferData should feed
+    ### self.XmlDict[self.bufferdata][self.typename]
+    ### Second use of Property self.BufferData should feed
+    ### self.XmlDict[self.bufferdata][self.attrname]
+    ### as example StringIO hold key buf='' so we can
+    ### add the file-read from that entry, or use
+    ### property self.DataIO.
+    ### Another candidate TemporaryFile
+    ### require mode[, r, b, w, rw+ ...],
+    ### suffix=[file suffix],
+    ### prefix=[file prefix],
+    ### dir=[location of temporary file ]
+    self.BufferData = 'StringIO'
+     
     ### Starting from generated Property DataIO:
     self.DataIO = filename
     ### Preparing the event statement with Property Events
     self.Events = ["start", "end"]
     
-  def PartialInspecter( self ):
-    for event, element in etree.iterparse(self.DataIO, events=self.Events ):
-      print("%5s, %4s, %s" % (event, element.tag, element.text))
 
+  #def FromParser( self ):
+  #  self.parser = etree.XMLParser(remove_blank_text=True)
+  #  self.root = etree.XML(self.DataIO, self.parser)
+    
+  def PartialInspecter( self, StrFileOut ):
+    FileOutput=file( StrFileOut, 'w' )
+    #root = etree.XML(self.DataIO, self.parser)
+    for event, element in etree.iterparse( self.DataIO, events=self.Events ):
+      FileOutput.write( "Event:{:5s}, name:{:4s}, text:[{:s}]\n".format(event, element.tag, element.text) )
+      #print("Event:{:5s}, name:{:4s}, text:[{:s}]".format(event, element.tag, element.text))
+    FileOutput.close() 
 
 
 if __name__ == "__main__":
   AGladeReader = WxGladeReader( './DiaImplement-option.wxg' )
+  AGladeReader.PartialInspecter( './DiaImplement-option-out.txt' )
+
